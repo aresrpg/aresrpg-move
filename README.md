@@ -11,4 +11,19 @@
 </p>
 <h3 align=center>Move modules for AresRPG on Sui</h3>
 
-TODO: write me senpai
+AresRPG is a multiplayer voxel RPG which has no serverside database, everything
+is stored on [Sui](https://sui.io/).
+
+Here is a description of the flow used.
+
+## Initialization
+
+AresRPG is a single entity providing verification on the game, and allows players
+to progress according to a set of private rules managed off-chain.
+
+- The user must create its own objects with enforced default values
+- The user then request a connector from the server module which will create a new shared object where the user can store and withdraw his data
+- This connector allows the publisher of the server module to mutate any data stored inside, effectively allowing the server to act on the user state
+- While the user state is in the connector, the server considers the player valid and will allow access to game servers
+
+> The player can withdraw his state at anytime but will be disconnected from the server, this is unsafe if done while playing as the server isn't saving player's progress on each interraction but rather at specific batched intervals
