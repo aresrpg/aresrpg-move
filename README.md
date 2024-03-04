@@ -21,9 +21,9 @@ Here is a description of the flow used.
 AresRPG is a single entity providing verification on the game, and allows players
 to progress according to a set of private rules managed off-chain.
 
-- The user must create its own objects with enforced default values
-- The user then request a connector from the server module which will create a new shared object where the user can store and withdraw his data
-- This connector allows the publisher of the server module to mutate any data stored inside, effectively allowing the server to act on the user state
-- While the user state is in the connector, the server considers the player valid and will allow access to game servers
+- The user must create its own shared storage along with his profile(s)
+- He is then free to transfer or sell those profiles.
+- To be able to play the user lock his profile inside the shared storage where the game master (server wallet) is able to mutate data of those profiles
+- A profile contains an inventory along with created characters and profile specific infos
 
-> The player can withdraw his state at anytime but will be disconnected from the server, this is unsafe if done while playing as the server isn't saving player's progress on each interraction but rather at specific batched intervals
+> The player can unlock his profile at anytime but will be disconnected from the server, this is unsafe if done while playing as the server isn't saving player's progress on each interraction but rather at specific batched intervals
