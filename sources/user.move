@@ -1,14 +1,13 @@
 module aresrpg::user {
-  use sui::tx_context::{Self, TxContext};
+  use sui::tx_context::{TxContext};
   use sui::object::{Self, UID, ID};
-  use sui::transfer;
+  use sui::event;
 
-  use std::string::{Self, String, utf8};
+  use std::string::{Self, String};
 
   use aresrpg::storage::{
     Self as ares_storage,
     Storage,
-    StorageCap,
     MutationCap
   };
 
@@ -18,46 +17,31 @@ module aresrpg::user {
     id: UID,
     name: String,
     mastery: u16,
-    storage_id: ID,
   }
+
+  // ====== Events ======
+
+  struct UserUpdate has copy, drop {}
 
   public fun create_user_profile(
     name: String,
-    storage_id: ID,
     ctx: &mut TxContext
   ): UserProfile {
     assert!(string::length(&name) > 3 && string::length(&name) < 20, ENameTooLong);
+
+    event::emit(UserUpdate {});
 
     UserProfile {
       id: object::new(ctx),
       name,
       mastery: 0,
-      storage_id
     }
   }
 
   public fun delete_user_profile(profile: UserProfile) {
-    let UserProfile { id, mastery: _, name: _, storage_id: _ } = profile;
+    let UserProfile { id, mastery: _, name: _ } = profile;
+    event::emit(UserUpdate {});
     object::delete(id);
-  }
-
-  public fun store_profile(
-    storage_cap: &StorageCap,
-    storage: &mut Storage,
-    profile: UserProfile,
-  ) {
-    ares_storage::store(storage_cap, storage, utf8(b"profile"), profile);
-  }
-
-  public entry fun withdraw_profile(
-    storage_cap: &StorageCap,
-    storage: &mut Storage,
-    ctx: &mut TxContext,
-  ) {
-    let sender = tx_context::sender(ctx);
-    let profile = ares_storage::remove<UserProfile>(storage_cap, storage, utf8(b"profile"));
-
-    transfer::transfer(profile, sender);
   }
 
   /// ====== Accessors ======
@@ -75,12 +59,13 @@ module aresrpg::user {
   public fun set_user_mastery(
     mutation_cap: &MutationCap,
     storage: &mut Storage,
+    profile_id: ID,
     mastery: u16,
   ) {
     let user_profile = ares_storage::borrow_mut<UserProfile>(
       mutation_cap,
       storage,
-      utf8(b"profile")
+      profile_id
     );
 
     user_profile.mastery = mastery;
@@ -89,12 +74,13 @@ module aresrpg::user {
   public fun set_user_name(
     mutation_cap: &MutationCap,
     storage: &mut Storage,
+    profile_id: ID,
     name: String,
   ) {
     let user_profile = ares_storage::borrow_mut<UserProfile>(
       mutation_cap,
       storage,
-      utf8(b"profile")
+      profile_id
     );
 
     user_profile.name = name;
