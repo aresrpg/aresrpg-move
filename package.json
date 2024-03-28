@@ -1,0 +1,18 @@
+{
+  "name": "aresrpg-move",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "update::display": "node -r dotenv/config ./scripts/update_display.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "dependencies": {
+    "@mysten/sui.js": "^0.51.0"
+  }
+}

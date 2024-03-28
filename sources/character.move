@@ -1,11 +1,15 @@
 module aresrpg::character {
-  use sui::tx_context::{Self, TxContext};
+  use sui::tx_context::{sender, TxContext};
   use sui::object::{Self, UID};
   use sui::event;
   use sui::transfer;
-  use sui::vec_set::{Self, VecSet};
+  use sui::package;
+  use sui::display;
+  use sui::table::{Self, Table};
 
-  use std::string::{Self, String};
+  use std::string::{Self, utf8, String, to_ascii, from_ascii};
+
+  use suitears::ascii_utils::{to_lower_case};
 
   const ENameTooLong: u64 = 0;
   const ENameTaken: u64 = 1;
@@ -15,19 +19,48 @@ module aresrpg::character {
   struct Character has key, store {
     id: UID,
     name: String,
+    position: String,
     experience: u64,
+    classe: String,
+    sex: String,
   }
 
   struct CharacterNameRegistry has key, store {
     id: UID,
-    registry: VecSet<String>
+    registry: Table<String, address>,
   }
 
-  fun init(ctx: &mut TxContext) {
+  // one time witness
+  struct CHARACTER has drop {}
+
+  fun init(otw: CHARACTER, ctx: &mut TxContext) {
     let name_registry = CharacterNameRegistry {
       id: object::new(ctx),
-      registry: vec_set::empty()
+      registry: table::new(ctx),
     };
+    let keys = vector[
+        utf8(b"name"),
+        utf8(b"link"),
+        utf8(b"image_url"),
+        utf8(b"description"),
+        utf8(b"project_url"),
+    ];
+
+    let values = vector[
+        utf8(b"{name}"),
+        utf8(b"https://aresrpg.world/classe/{classe}"),
+        utf8(b"https://aresrpg.world/classe/{classe}_{sex}.png"),
+        utf8(b"Character part of the AresRPG universe."),
+        utf8(b"https://aresrpg.world"),
+    ];
+
+    let publisher = package::claim(otw, ctx);
+    let display = display::new_with_fields<Character>(&publisher, keys, values, ctx);
+
+    display::update_version(&mut display);
+
+    transfer::public_transfer(publisher, sender(ctx));
+    transfer::public_transfer(display, sender(ctx));
 
     transfer::share_object(name_registry);
   }
@@ -39,22 +72,32 @@ module aresrpg::character {
     for: address
   }
 
+  // ====== Functions ======
+
   public fun create_character(
-    name: String,
     name_registry: &mut CharacterNameRegistry,
+    raw_name: String,
+    classe: String,
+    sex: String,
     ctx: &mut TxContext
   ): Character {
-    assert!(string::length(&name) > 3 && string::length(&name) < 20, ENameTooLong);
-    assert!(!vec_set::contains(&name_registry.registry, &name), ENameTaken);
+    let ascii_name = to_ascii(raw_name);
+    let lower_case_name = to_lower_case(ascii_name);
+    let utf8_name = from_ascii(lower_case_name);
 
-    event::emit(Update { for: tx_context::sender(ctx) });
+    assert!(string::length(&utf8_name) > 3 && string::length(&utf8_name) < 20, ENameTooLong);
+    assert!(!table::contains(&name_registry.registry, utf8_name), ENameTaken);
 
-    vec_set::insert(&mut name_registry.registry, name);
+    event::emit(Update { for: sender(ctx) });
+    table::add(&mut name_registry.registry, utf8_name, sender(ctx));
 
     Character {
       id: object::new(ctx),
-      name,
+      name: utf8_name,
+      position: utf8(b"{\"x\":0,\"y\":0,\"z\":0}"),
       experience: 0,
+      classe,
+      sex
     }
   }
 
@@ -63,10 +106,17 @@ module aresrpg::character {
     name_registry: &mut CharacterNameRegistry,
     ctx: &mut TxContext
   ) {
-    let Character { id, name, experience: _ } = character;
+    let Character {
+      id,
+      name,
+      position: _,
+      experience: _,
+      classe: _,
+      sex: _,
+    } = character;
 
-    event::emit(Update { for: tx_context::sender(ctx) });
-    vec_set::remove(&mut name_registry.registry, &name);
+    event::emit(Update { for: sender(ctx) });
+    table::remove(&mut name_registry.registry, name);
     object::delete(id);
   }
 
@@ -78,6 +128,17 @@ module aresrpg::character {
 
   public fun character_experience(character: &Character): &u64 {
     &character.experience
+  }
+
+  public fun is_name_taken(
+    name_registry: &CharacterNameRegistry,
+    name: String,
+  ) {
+    let ascii_name = to_ascii(name);
+    let lower_case_name = to_lower_case(ascii_name);
+    let utf8_name = from_ascii(lower_case_name);
+
+    assert!(!table::contains(&name_registry.registry, utf8_name), ENameTaken);
   }
 
   /// ====== Mutators ======

@@ -1,23 +1,28 @@
 module aresrpg::server {
-  use sui::tx_context::{Self, TxContext};
+  use sui::tx_context::{sender, TxContext};
   use sui::transfer;
   use sui::event;
   use sui::object::{Self, UID, ID};
   use sui::object_bag::{Self, ObjectBag};
+  use sui::vec_set::{Self, VecSet};
 
   use aresrpg::character::{Self, Character};
 
   // ====== Types ======
 
   // Allows admin actions like mutating player data
-  struct AdminCap has key { id: UID }
+  struct AdminCap has key {
+    id: UID,
+    // keeping track of all created storages, sort of on-chain load balancer
+    known_storages: VecSet<ID>
+  }
 
   /// A receipt allowing an user to unlock a character
   struct CharacterLockReceipt has key {
     id: UID,
+    storage_id: ID,
     character_id: ID
   }
-
   struct ServerStorage has key, store {
     id: UID,
     characters: ObjectBag
@@ -31,14 +36,19 @@ module aresrpg::server {
   }
 
   fun init(ctx: &mut TxContext) {
-    let sender = tx_context::sender(ctx);
-    let admin_cap = AdminCap { id: object::new(ctx) };
-    let server_storage = ServerStorage {
+    let storage_uid = object::new(ctx);
+    // create the admin cap and insert the first storage
+    let admin_cap = AdminCap {
       id: object::new(ctx),
+      known_storages: vec_set::singleton(object::uid_to_inner(&storage_uid))
+    };
+    // create a storage out of the box for ease of use
+    let server_storage = ServerStorage {
+      id: storage_uid,
       characters: object_bag::new(ctx)
     };
 
-    transfer::transfer(admin_cap, sender);
+    transfer::transfer(admin_cap, sender(ctx));
     transfer::share_object(server_storage);
   }
 
@@ -54,21 +64,35 @@ module aresrpg::server {
 
   /// ====== Mutators ======
 
+  /// Create a new storage to balance the load on storage objects
+  public fun create_storage(adminCap: &mut AdminCap, ctx: &mut TxContext) {
+    let storage_uid = object::new(ctx);
+    let storage_id = object::uid_to_inner(&storage_uid);
+    let server_storage = ServerStorage {
+      id: storage_uid,
+      characters: object_bag::new(ctx)
+    };
+
+    vec_set::insert(&mut adminCap.known_storages, storage_id);
+    transfer::share_object(server_storage);
+  }
+
   /// Lock a character in the server to be used in the game
   public fun lock_character(
     server_storage: &mut ServerStorage,
     character: Character,
     ctx: &mut TxContext
   ) {
-    event::emit(Update { for: tx_context::sender(ctx) });
+    event::emit(Update { for: sender(ctx) });
 
     let character_id = object::id(&character);
     object_bag::add(&mut server_storage.characters, character_id, character);
 
     transfer::transfer(CharacterLockReceipt {
       id: object::new(ctx),
-      character_id
-    }, tx_context::sender(ctx));
+      character_id,
+      storage_id: object::uid_to_inner(&server_storage.id)
+    }, sender(ctx));
   }
 
   /// Unlock a character
@@ -77,9 +101,9 @@ module aresrpg::server {
     lock_receipt: CharacterLockReceipt,
     ctx: &mut TxContext
   ): Character {
-    event::emit(Update { for: tx_context::sender(ctx) });
+    event::emit(Update { for: sender(ctx) });
 
-    let CharacterLockReceipt { character_id, id } = lock_receipt;
+    let CharacterLockReceipt { character_id, id, storage_id: _ } = lock_receipt;
 
     object::delete(id);
     object_bag::remove<ID, Character>(&mut server_storage.characters, character_id)
