@@ -6,7 +6,7 @@ module aresrpg::server {
 
   use std::string::{String};
 
-  use aresrpg::character::{Self, Character};
+  use aresrpg::character::{Self, Character, set_storage_id, remove_storage_id};
 
   // ====== Types ======
 
@@ -85,6 +85,10 @@ module aresrpg::server {
   ) {
     event::emit(Update { target: sender(ctx) });
 
+    let mut character = character;
+
+    set_storage_id(&mut character, object::uid_to_inner(&server_storage.id));
+
     let character_id = object::id(&character);
     object_bag::add(&mut server_storage.characters, character_id, character);
 
@@ -106,7 +110,11 @@ module aresrpg::server {
     let CharacterLockReceipt { character_id, id, storage_id: _ } = lock_receipt;
 
     object::delete(id);
-    object_bag::remove<ID, Character>(&mut server_storage.characters, character_id)
+    let mut character = object_bag::remove<ID, Character>(&mut server_storage.characters, character_id);
+
+    remove_storage_id(&mut character);
+
+    return character
   }
 
   public fun character_set_experience(

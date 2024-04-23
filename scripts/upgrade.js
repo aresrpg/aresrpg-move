@@ -5,10 +5,10 @@ import BigNumber from 'bignumber.js'
 import { execSync } from 'child_process'
 import { writeFileSync } from 'fs'
 
-const PACKAGE_ID = '0xa92996f84219ac98ae614da404382d37089d2fd9a4714f9fbd6e663b74cd20af'
-const UPGRADE_CAP = '0x625b418432dd89c5c96dcbadadb407509feb225d3d63f52d9e3a886c72d6516a'
-const CHARACTER_ADMIN_CAP = '0x46f2df7e5383e55e8b71b72d62c46ad0e5c7365d6119e20d7ab32c9bcf46c5eb'
-const NAME_REGISTRY = '0xdeba19cc5a661263c3b2e15fb7c98c5eec817260b6e17e95992381f553798d61'
+const PACKAGE_ID = '0xd975e94c12abf56154cce5d92e0961c21b77adb4cde0b8c974b8aa5ec8cbdddc'
+const UPGRADE_CAP = '0xd35b5d61a3558949f704500f37d3e95adaf4c83c13105fc36b2bbd8dbe587cf1'
+const CHARACTER_ADMIN_CAP = '0x56b0460486f2767f66b4cbf1ca0af9504d762fc8bd8d7442aaf7b2f1cc6a3cce'
+const NAME_REGISTRY = '0x737873d66fec1ade650b4a31d6d4df71e136a1dfebf8029b06dfe106d5cbc485'
 
 const txb = new TransactionBlock()
 

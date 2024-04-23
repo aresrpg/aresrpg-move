@@ -18,5 +18,9 @@ Here is a description of the flow used.
 
 ## Publish a package
 
-- change the `rev` version in `Move.toml`
+- change the `rev` version in `Move.toml` to correspond to the wanted network
 - `npm run publish::<network>`
+- update `publish-at` in `Move.toml`
+- update env in `aresrpg-gamemaster`
+- update env in `aresrpg-dapp`
+- update `upgrade.js` in `aresrpg-move`

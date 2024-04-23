@@ -1,7 +1,7 @@
 [package]
 name = "aresrpg"
 version = "0.1.0"
-published-at = "0xa92996f84219ac98ae614da404382d37089d2fd9a4714f9fbd6e663b74cd20af"
+published-at = "0xd975e94c12abf56154cce5d92e0961c21b77adb4cde0b8c974b8aa5ec8cbdddc"
 edition = "2024.beta"
 
 # edition = "2024.alpha" # To use the Move 2024 edition, currently in alpha

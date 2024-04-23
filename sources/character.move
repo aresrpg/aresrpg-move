@@ -4,6 +4,7 @@ module aresrpg::character {
   use sui::display;
   use sui::table::{Self, Table};
   use sui::event;
+  use sui::dynamic_field;
 
   use std::string::{Self, utf8, String, to_ascii, from_ascii};
   use std::ascii;
@@ -211,6 +212,19 @@ module aresrpg::character {
   }
 
   /// ====== Mutators ======
+
+  public(package) fun set_storage_id(
+    character: &mut Character,
+    id: ID,
+  ) {
+    dynamic_field::add(&mut character.id, b"storage", id);
+  }
+
+  public(package) fun remove_storage_id(
+    character: &mut Character,
+  ) {
+    dynamic_field::remove<vector<u8>, ID>(&mut character.id, b"storage");
+  }
 
   /// Add experience to a character (package only to prevent public usage)
   public(package) fun set_experience(
