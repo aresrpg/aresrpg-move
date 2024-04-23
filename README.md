@@ -16,15 +16,7 @@ is stored on [Sui](https://sui.io/).
 
 Here is a description of the flow used.
 
-## Initialization
+## Publish a package
 
-AresRPG is a single entity providing verification on the game, and allows players
-to progress according to a set of private rules managed off-chain.
-
-- The user must create its own characters and give them a name
-- He is then free to transfer or sell those characters.
-- To be able to play the user lock his characters inside the shared server storage where the game master (server wallet) is able to mutate data of those profiles
-- A character contains an inventory and specific characteristics and infos
-- Only the user can unlock his characters, the server can only mutate fields
-
-> The player can unlock his characters at anytime but will be disconnected from the server, this is unsafe if done while playing as the server isn't saving player's progress on each interraction but rather at specific batched intervals
+- change the `rev` version in `Move.toml`
+- `npm run publish::<network>`

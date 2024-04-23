@@ -1,22 +1,19 @@
 module aresrpg::item {
-  use sui::tx_context::{sender, TxContext};
+  use sui::tx_context::{sender};
   use std::string::{utf8, String};
-  use sui::transfer;
-  use sui::object::{Self, UID};
   use sui::package;
   use sui::display;
-  use std::option::{Option};
 
   #[allow(unused_field)]
-  struct Damage has store {
+  public struct Damage has store {
     from: u16,
     to: u16,
-    type: String,
+    damage_type: String,
     element: String
   }
 
   #[allow(unused_field)]
-  struct Statistics has store {
+  public struct Statistics has store {
     vitality: u16,
     wisdom: u16,
     strength: u16,
@@ -31,20 +28,20 @@ module aresrpg::item {
     critical_outcomes: u8,
   }
 
-  struct Item has key, store {
+  public struct Item has key, store {
     id: UID,
     name: String,
-    type: String,
+    item_type: String,
     level: u8,
     damage: vector<Damage>,
     stats: Option<Statistics>
   }
 
-  struct ItemMintCap has key {
+  public struct ItemMintCap has key {
     id: UID,
   }
 
-  struct ITEM has drop {}
+  public struct ITEM has drop {}
 
   fun init(otw: ITEM, ctx: &mut TxContext) {
     let keys = vector[
@@ -64,7 +61,7 @@ module aresrpg::item {
     ];
 
     let publisher = package::claim(otw, ctx);
-    let display = display::new_with_fields<Item>(&publisher, keys, values, ctx);
+    let mut display = display::new_with_fields<Item>(&publisher, keys, values, ctx);
 
     display::update_version(&mut display);
 
@@ -76,7 +73,7 @@ module aresrpg::item {
   public fun mint(
     _: &ItemMintCap,
     name: String,
-    type: String,
+    item_type: String,
     level: u8,
     damage: vector<Damage>,
     stats: Option<Statistics>,
@@ -85,7 +82,7 @@ module aresrpg::item {
     Item {
       id: object::new(ctx),
       name,
-      type,
+      item_type,
       level,
       damage,
       stats

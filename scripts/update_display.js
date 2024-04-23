@@ -1,29 +1,23 @@
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client'
 import { TransactionBlock } from '@mysten/sui.js/transactions'
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519'
-import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography'
+import { client, keypair } from './client.js'
 
-const { PRIVATE_KEY = '' } = process.env
-const NETWORK = 'mainnet'
-const DISPLAY = '0x6d1c81038bee76beeb94e10549eec1e4bd57eab44b49d8fddddab41c7434ae79'
+const DISPLAY = '0x261de0a1d4c5239e1b2a4974d343268a44e9b082de93b9c3646e935bc7b7a418'
 const DISPLAY_TYPE =
-  '0x3602db18a9fad3b46ebef9de35934b0f2ed0d72bd6fc59f6301d32d8a4da8e42::character::Character'
+  '0xaddc2335cf9b67c69def6bc8cfb71192cc864e34ca71bf9eddb4a76c252800bc::character::Character'
 
-const client = new SuiClient({ url: getFullnodeUrl(NETWORK) })
-const keypair = Ed25519Keypair.fromSecretKey(decodeSuiPrivateKey(PRIVATE_KEY).secretKey)
 const txb = new TransactionBlock()
 
 console.log('Updating display...', keypair.getPublicKey().toSuiAddress())
 
-txb.moveCall({
-  target: '0x2::display::edit',
-  typeArguments: [DISPLAY_TYPE],
-  arguments: [
-    txb.object(DISPLAY),
-    txb.pure.string('link'),
-    txb.pure.string('https://aresrpg.world/classe/{classe}'),
-  ],
-})
+// txb.moveCall({
+//   target: '0x2::display::edit',
+//   typeArguments: [DISPLAY_TYPE],
+//   arguments: [
+//     txb.object(DISPLAY),
+//     txb.pure.string('link'),
+//     txb.pure.string('https://aresrpg.world/classe/{classe}'),
+//   ],
+// })
 
 txb.moveCall({
   target: '0x2::display::edit',
@@ -31,7 +25,9 @@ txb.moveCall({
   arguments: [
     txb.object(DISPLAY),
     txb.pure.string('image_url'),
-    txb.pure.string('https://aresrpg.world/classe/{classe}_{male}.png'),
+    txb.pure.string(
+      'https://raw.githubusercontent.com/aresrpg/aresrpg-dapp/master/src/assets/classe/{classe}_{sex}.jpg'
+    ),
   ],
 })
 

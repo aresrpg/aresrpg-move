@@ -1,7 +1,8 @@
 [package]
 name = "aresrpg"
 version = "0.1.0"
-published-at = "0x7d74e9903cc689f2371e60af1ae67d955ed854c282642ddfc2887aece5a86a4c"
+published-at = "0xa92996f84219ac98ae614da404382d37089d2fd9a4714f9fbd6e663b74cd20af"
+edition = "2024.beta"
 
 # edition = "2024.alpha" # To use the Move 2024 edition, currently in alpha
 # license = ""           # e.g., "MIT", "GPL", "Apache 2.0"
@@ -10,16 +11,10 @@ published-at = "0x7d74e9903cc689f2371e60af1ae67d955ed854c282642ddfc2887aece5a86a
 [dependencies.Sui]
 git = "https://github.com/MystenLabs/sui.git"
 subdir = "crates/sui-framework/packages/sui-framework"
-rev = "framework/mainnet"
-
-[dependencies.SuiTears]
-git = "https://github.com/interest-protocol/suitears.git"
-subdir = "contracts"
-rev = "main"
+rev = "framework/testnet"
 
 [addresses]
 aresrpg = "0x0"
-suitears = "0x2085d89f5df00bf6d628748b02a0f23f5d512dc4a23e22d74efeb2c8c86005e0"
 
 # Named addresses will be accessible in Move as `@name`. They're also exported:
 # for example, `std = "0x1"` is exported by the Standard Library.

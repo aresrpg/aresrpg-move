@@ -1,38 +1,38 @@
 module aresrpg::server {
-  use sui::tx_context::{sender, TxContext};
-  use sui::transfer;
+  use sui::tx_context::{sender};
   use sui::event;
-  use sui::object::{Self, UID, ID};
   use sui::object_bag::{Self, ObjectBag};
   use sui::vec_set::{Self, VecSet};
+
+  use std::string::{String};
 
   use aresrpg::character::{Self, Character};
 
   // ====== Types ======
 
   // Allows admin actions like mutating player data
-  struct AdminCap has key {
+  public struct AdminCap has key {
     id: UID,
     // keeping track of all created storages, sort of on-chain load balancer
     known_storages: VecSet<ID>
   }
 
   /// A receipt allowing an user to unlock a character
-  struct CharacterLockReceipt has key {
+  public struct CharacterLockReceipt has key {
     id: UID,
     storage_id: ID,
     character_id: ID
   }
-  struct ServerStorage has key, store {
+  public struct ServerStorage has key, store {
     id: UID,
     characters: ObjectBag
   }
 
   // ====== Events ======
 
-  struct Update has copy, drop {
+  public struct Update has copy, drop {
     /// The address of the user impacted by the update
-    for: address
+    target: address
   }
 
   fun init(ctx: &mut TxContext) {
@@ -83,7 +83,7 @@ module aresrpg::server {
     character: Character,
     ctx: &mut TxContext
   ) {
-    event::emit(Update { for: sender(ctx) });
+    event::emit(Update { target: sender(ctx) });
 
     let character_id = object::id(&character);
     object_bag::add(&mut server_storage.characters, character_id, character);
@@ -101,7 +101,7 @@ module aresrpg::server {
     lock_receipt: CharacterLockReceipt,
     ctx: &mut TxContext
   ): Character {
-    event::emit(Update { for: sender(ctx) });
+    event::emit(Update { target: sender(ctx) });
 
     let CharacterLockReceipt { character_id, id, storage_id: _ } = lock_receipt;
 
@@ -109,14 +109,24 @@ module aresrpg::server {
     object_bag::remove<ID, Character>(&mut server_storage.characters, character_id)
   }
 
-  public fun character_add_experience(
+  public fun character_set_experience(
     _: &AdminCap,
     server_storage: &mut ServerStorage,
     character_id: ID,
     experience: u64
   ) {
     let character = object_bag::borrow_mut(&mut server_storage.characters, character_id);
-    character::add_experience(character, experience);
+    character::set_experience(character, experience);
+  }
+
+  public fun character_set_position(
+    _: &AdminCap,
+    server_storage: &mut ServerStorage,
+    character_id: ID,
+    position: String
+  ) {
+    let character = object_bag::borrow_mut(&mut server_storage.characters, character_id);
+    character::set_position(character, position);
   }
 
 }
