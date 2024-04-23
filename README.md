@@ -23,4 +23,8 @@ Here is a description of the flow used.
 - update `publish-at` in `Move.toml`
 - update env in `aresrpg-gamemaster`
 - update env in `aresrpg-dapp`
+- update env in `aresrpg-server`
+- update configs in `k8s`
+  - in `releases/aresrpg-gamemaster`
+  - in `releases/aresrpg-server`
 - update `upgrade.js` in `aresrpg-move`
