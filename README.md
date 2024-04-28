@@ -28,3 +28,10 @@ Here is a description of the flow used.
   - in `releases/aresrpg-gamemaster`
   - in `releases/aresrpg-server`
 - update `upgrade.js` in `aresrpg-move`
+
+## Upgrade a package
+
+- make sure the `rev` version in `Move.toml` is correct
+- update the PACKAGE_VERSION in `aresrpg-move/sources/version.move`
+- `npm run upgrade::<network>`
+- same as above

@@ -1,8 +1,17 @@
 module aresrpg::item {
-  use sui::tx_context::{sender};
+  use sui::{
+    tx_context::{sender},
+    package,
+    display
+  };
+
   use std::string::{utf8, String};
-  use sui::package;
-  use sui::display;
+
+  use aresrpg::{
+    admin::{AdminCap}
+  };
+
+  // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
   #[allow(unused_field)]
   public struct Damage has store {
@@ -31,17 +40,19 @@ module aresrpg::item {
   public struct Item has key, store {
     id: UID,
     name: String,
+    /// todo: await enum support
+    /// misc, consumable, relic, rune, mount
+    /// helmet, cape, necklace, ring, belt, boots,
+    /// bow, wand, staff, dagger, scythe, axe, hammer, shovel, sword, fishing_rod, pickaxe
     item_type: String,
     level: u8,
     damage: vector<Damage>,
     stats: Option<Statistics>
   }
 
-  public struct ItemMintCap has key {
-    id: UID,
-  }
-
   public struct ITEM has drop {}
+
+  // ╔════════════════ [ Write ] ════════════════════════════════════════════ ]
 
   fun init(otw: ITEM, ctx: &mut TxContext) {
     let keys = vector[
@@ -67,11 +78,10 @@ module aresrpg::item {
 
     transfer::public_transfer(publisher, sender(ctx));
     transfer::public_transfer(display, sender(ctx));
-    transfer::transfer(ItemMintCap { id: object::new(ctx) }, sender(ctx))
   }
 
-  public fun mint(
-    _: &ItemMintCap,
+  public(package) fun mint(
+    _: &AdminCap,
     name: String,
     item_type: String,
     level: u8,

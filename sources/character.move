@@ -1,23 +1,24 @@
 module aresrpg::character {
-  use sui::tx_context::{sender};
-  use sui::package;
-  use sui::display;
-  use sui::table::{Self, Table};
-  use sui::event;
-  use sui::dynamic_field;
+  use sui::{
+    tx_context::{sender},
+    package,
+    display,
+    event,
+  };
 
-  use std::string::{Self, utf8, String, to_ascii, from_ascii};
-  use std::ascii;
+  use std::string::{utf8, String};
 
-  const ENameTooLong: u64 = 0;
-  const ENameTaken: u64 = 1;
+  use aresrpg::{
+    registry::{NameRegistry},
+    string::{to_lower_case},
+    admin::{AdminCap},
+  };
+
+  // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
+
   const EInvalidClasse: u64 = 2;
   const EInvalidSex: u64 = 3;
-  const EHasWhitespace: u64 = 4;
-  const EVersionMismatch: u64 = 5;
   const EExperienceTooLow: u64 = 6;
-
-  const VERSION: u64 = 5;
 
   public struct Character has key, store {
     id: UID,
@@ -28,17 +29,7 @@ module aresrpg::character {
     sex: String,
   }
 
-  public struct CharacterNameRegistry has key, store {
-    id: UID,
-    module_version: u64,
-    registry: Table<String, address>,
-  }
-
-  public struct AdminCap has key {
-    id: UID,
-  }
-
-  // ====== Events ======
+  // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   public struct Update has copy, drop {
     /// The address of the user impacted by the update
@@ -48,12 +39,9 @@ module aresrpg::character {
   // one time witness
   public struct CHARACTER has drop {}
 
+  // ╔════════════════ [ Write ] ════════════════════════════════════════════ ]
+
   fun init(otw: CHARACTER, ctx: &mut TxContext) {
-    let name_registry = CharacterNameRegistry {
-      id: object::new(ctx),
-      module_version: VERSION,
-      registry: table::new(ctx),
-    };
     let keys = vector[
         utf8(b"name"),
         utf8(b"link"),
@@ -72,19 +60,12 @@ module aresrpg::character {
 
     let publisher = package::claim(otw, ctx);
     let mut display = display::new_with_fields<Character>(&publisher, keys, values, ctx);
-    let admin_cap = AdminCap { id: object::new(ctx) };
 
     display::update_version(&mut display);
 
     transfer::public_transfer(publisher, sender(ctx));
     transfer::public_transfer(display, sender(ctx));
-
-    transfer::transfer(admin_cap, sender(ctx));
-
-    transfer::share_object(name_registry);
   }
-
-  // ====== Functions ======
 
   fun valid_classe(classe: String): bool {
     let classes = vector[
@@ -104,24 +85,24 @@ module aresrpg::character {
     vector::contains(&sexes, &sex)
   }
 
-  public fun create_character(
-    name_registry: &mut CharacterNameRegistry,
+  /// Create a new character, and add it to the name registry
+  /// this function can only be called by the package
+  /// so the user must go through the aresrpg::aresrpg module
+  public(package) fun create(
+    name_registry: &mut NameRegistry,
     raw_name: String,
     classe: String,
     sex: String,
     ctx: &mut TxContext
   ): Character {
-    let name = to_lower_case(raw_name);
-
-    assert!(name_registry.module_version == VERSION, EVersionMismatch);
-    assert!(string::length(&name) > 3 && string::length(&name) < 20, ENameTooLong);
-    assert!(!table::contains(&name_registry.registry, name), ENameTaken);
-    assert!(!contains_whitespace(name), EHasWhitespace);
     assert!(valid_classe(classe), EInvalidClasse);
     assert!(valid_sex(sex), EInvalidSex);
 
+    let name = to_lower_case(raw_name);
+
+    name_registry.add_name(name, ctx);
+
     event::emit(Update { target: sender(ctx) });
-    table::add(&mut name_registry.registry, name, sender(ctx));
 
     Character {
       id: object::new(ctx),
@@ -133,13 +114,11 @@ module aresrpg::character {
     }
   }
 
-  public fun delete_character(
+  public(package) fun delete(
     character: Character,
-    name_registry: &mut CharacterNameRegistry,
-    ctx: &mut TxContext
+    name_registry: &mut NameRegistry,
+    ctx: &TxContext
   ) {
-    assert!(name_registry.module_version == VERSION, EVersionMismatch);
-
     let Character {
       id,
       name,
@@ -149,48 +128,31 @@ module aresrpg::character {
       sex: _,
     } = character;
 
+    name_registry.remove_name(name);
     event::emit(Update { target: sender(ctx) });
-    table::remove(&mut name_registry.registry, name);
     object::delete(id);
   }
 
-  fun to_lower_case(str: String): String {
-    let string = to_ascii(str);
-    let (mut bytes, mut i) = (ascii::into_bytes(string), 0);
-
-    while (i < vector::length(&bytes)) {
-      let byte = vector::borrow_mut(&mut bytes, i);
-      if (*byte >= 65u8 && *byte <= 90u8) *byte = *byte + 32u8;
-      i = i + 1;
-    };
-
-    from_ascii(ascii::string(bytes))
-  }
-
-  fun contains_whitespace(str: String): bool {
-    let string = to_ascii(str);
-    let (mut bytes, mut i) = (ascii::into_bytes(string), 0);
-
-    while (i < vector::length(&bytes)) {
-      let byte = vector::borrow_mut(&mut bytes, i);
-      if (*byte == 32u8) return true;
-      i = i + 1;
-    };
-
-    false
-  }
-
-  /// Migrate the module to the latest version, this prevent usage of old functions
-  /// towards the name registry
-  entry fun migrate(
-    _: &AdminCap,
-    name_registry: &mut CharacterNameRegistry
+  /// Add experience to a character
+  public fun set_experience(
+    character: &mut Character,
+    _admin: &AdminCap,
+    experience: u64,
   ) {
-    assert!(name_registry.module_version < VERSION, EVersionMismatch);
-    name_registry.module_version = VERSION;
+    assert!(experience > character.experience, EExperienceTooLow);
+    character.experience = experience;
   }
 
-  /// ====== Accessors ======
+  /// Set the position of a character
+  public fun set_position(
+    character: &mut Character,
+    _admin: &AdminCap,
+    position: String,
+  ) {
+    character.position = position;
+  }
+
+  // ╔════════════════ [ Read ] ════════════════════════════════════════════ ]
 
   public fun character_name(character: &Character): &String {
     &character.name
@@ -199,48 +161,4 @@ module aresrpg::character {
   public fun character_experience(character: &Character): &u64 {
     &character.experience
   }
-
-  public fun is_name_taken(
-    name_registry: &CharacterNameRegistry,
-    raw_name: String,
-  ) {
-    let name = to_lower_case(raw_name);
-
-    assert!(name_registry.module_version == VERSION, EVersionMismatch);
-    assert!(!contains_whitespace(name), EHasWhitespace);
-    assert!(!table::contains(&name_registry.registry, name), ENameTaken);
-  }
-
-  /// ====== Mutators ======
-
-  public(package) fun set_storage_id(
-    character: &mut Character,
-    id: ID,
-  ) {
-    dynamic_field::add(&mut character.id, b"storage", id);
-  }
-
-  public(package) fun remove_storage_id(
-    character: &mut Character,
-  ) {
-    dynamic_field::remove<vector<u8>, ID>(&mut character.id, b"storage");
-  }
-
-  /// Add experience to a character (package only to prevent public usage)
-  public(package) fun set_experience(
-    character: &mut Character,
-    experience: u64,
-  ) {
-    assert!(experience > character.experience, EExperienceTooLow);
-    character.experience = experience;
-  }
-
-  /// Set the position of a character (package only to prevent public usage)
-  public(package) fun set_position(
-    character: &mut Character,
-    position: String,
-  ) {
-    character.position = position;
-  }
-
 }

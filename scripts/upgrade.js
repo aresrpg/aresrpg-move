@@ -5,10 +5,10 @@ import BigNumber from 'bignumber.js'
 import { execSync } from 'child_process'
 import { writeFileSync } from 'fs'
 
-const PACKAGE_ID = '0xd975e94c12abf56154cce5d92e0961c21b77adb4cde0b8c974b8aa5ec8cbdddc'
-const UPGRADE_CAP = '0xd35b5d61a3558949f704500f37d3e95adaf4c83c13105fc36b2bbd8dbe587cf1'
-const CHARACTER_ADMIN_CAP = '0x56b0460486f2767f66b4cbf1ca0af9504d762fc8bd8d7442aaf7b2f1cc6a3cce'
-const NAME_REGISTRY = '0x737873d66fec1ade650b4a31d6d4df71e136a1dfebf8029b06dfe106d5cbc485'
+const PACKAGE_ID = '0x0c27b8da5a304e5cc1862a664379e039584ab5dee0988ef4e54e53f7f5c6970b'
+const UPGRADE_CAP = '0x6b8167c5eef9db736f295f4f89f56be64f70136b9227c9cf47230b6019dad06f'
+const ADMIN_CAP = '0xf7f83fa7f90bf4bcff4dd06a1cc3b8e08eb8f6a04ecf02a431614dc36bd989d3'
+const VERSION = '0xcbebec478bfa2556feb97eef6d12a783578b6cfae1e6341f11617f32e33ead59'
 
 const txb = new TransactionBlock()
 
@@ -74,21 +74,6 @@ const objects = await client.multiGetObjects({
   },
 })
 
-function find_type(value) {
-  return objects.find(({ data: { type } }) => {
-    const [, module_name, raw_type] = type.split('::')
-    return type === value || `${module_name}::${raw_type}` == value
-  })?.data?.objectId
-}
-
-function find_display(value) {
-  return objects.find(({ data, data: { type } }) => {
-    const [, display, Display, submodule, subtype] = type.split('::')
-    const wanted = `${submodule}::${subtype}`.slice(0, -1)
-    return display === 'display' && Display.split('<')[0] === 'Display' && wanted === value
-  })?.data?.objectId
-}
-
 const gas = new BigNumber(computationCost)
   .plus(new BigNumber(storageCost))
   .minus(new BigNumber(storageRebate))
@@ -101,26 +86,44 @@ const upgrade_object = {
   digest,
   gas,
   previous_package: PACKAGE_ID,
-  package: find_type('package'),
+  ...Object.fromEntries(
+    objects.map(({ data }) => {
+      // @ts-ignore
+      const { type, objectId } = data
+
+      if (type === '0x2::package::Publisher')
+        return [`publisher (${objectId.slice(0, 4)})`, objectId]
+
+      if (type.startsWith('0x2::display::Display<')) {
+        const [, , , submodule, subtype] = type.split('::')
+        const extracted_type = `${submodule}::${subtype}`.slice(0, -1)
+        return [`Display<${extracted_type}>`, objectId]
+      }
+
+      if (type === 'package') return ['package', objectId]
+
+      const [, module_name, raw_type] = type.split('::')
+
+      return [`${module_name}::${raw_type}`, objectId]
+    })
+  ),
 }
 
 console.dir(upgrade_object, { depth: Infinity })
 
-const file_name = `./published/upgrade_report_${new Date()
-  .toISOString()
-  .replace(/:/g, '-')}_${NETWORK}.json`
+const file_name = `./reports/upgrade_${NETWORK}_${new Date().toISOString().replace(/:/g, '-')}.json`
 
 writeFileSync(file_name, JSON.stringify(upgrade_object, null, 2))
 
 console.log('==================== [ x ] ====================')
 
-console.log('==================== [ MIGRATING OBJECTS ] ====================')
+console.log('==================== [ UPDATING VERSION ] ====================')
 
 const tx = new TransactionBlock()
 
 tx.moveCall({
-  target: `${upgrade_object.package}::character::migrate`,
-  arguments: [tx.object(CHARACTER_ADMIN_CAP), tx.object(NAME_REGISTRY)],
+  target: `${upgrade_object.package}::version::update`,
+  arguments: [tx.object(VERSION), tx.object(ADMIN_CAP)],
 })
 
 const migrate_result = await client.signAndExecuteTransactionBlock({
@@ -137,6 +140,7 @@ if (migrate_result.effects?.status.error) {
   process.exit(1)
 }
 
-console.log('objects migrated! 🎉')
+console.log('version updated! 🎉')
+console.log('digest:', migrate_result.digest)
 
 console.log('==================== [ x ] ====================')

@@ -59,21 +59,6 @@ const objects = await client.multiGetObjects({
   },
 })
 
-function find_type(value) {
-  return objects.find(({ data: { type } }) => {
-    const [, module_name, raw_type] = type.split('::')
-    return type === value || `${module_name}::${raw_type}` == value
-  })?.data?.objectId
-}
-
-function find_display(value) {
-  return objects.find(({ data, data: { type } }) => {
-    const [, display, Display, submodule, subtype] = type.split('::')
-    const wanted = `${submodule}::${subtype}`.slice(0, -1)
-    return display === 'display' && Display.split('<')[0] === 'Display' && wanted === value
-  })?.data?.objectId
-}
-
 const gas = new BigNumber(computationCost)
   .plus(new BigNumber(storageCost))
   .minus(new BigNumber(storageRebate))
@@ -82,23 +67,38 @@ const gas = new BigNumber(computationCost)
   .toString()
 
 const publish_object = {
-  NETWORK,
+  date: new Date().toISOString(),
+  network: NETWORK,
   digest,
   gas,
-  package: find_type('package'),
-  upgrade_cap: find_type('package::UpgradeCap'),
-  character_admin_cap: find_type('character::AdminCap'),
-  name_registry: find_type('character::CharacterNameRegistry'),
-  server_admin_cap: find_type('server::AdminCap'),
-  item_mint_cap: find_type('item::ItemMintCap'),
-  item_display: find_display('item::Item'),
-  character_display: find_display('character::Character'),
+  ...Object.fromEntries(
+    objects.map(({ data }) => {
+      // @ts-ignore
+      const { type, objectId } = data
+
+      if (type === '0x2::package::Publisher')
+        return [`publisher (${objectId.slice(0, 4)})`, objectId]
+
+      if (type.startsWith('0x2::display::Display<')) {
+        const [, , , submodule, subtype] = type.split('::')
+        const extracted_type = `${submodule}::${subtype}`.slice(0, -1)
+        return [`Display<${extracted_type}>`, objectId]
+      }
+
+      if (type === 'package') return ['package', objectId]
+
+      const [, module_name, raw_type] = type.split('::')
+
+      return [`${module_name}::${raw_type}`, objectId]
+    })
+  ),
 }
+
 console.dir(publish_object, { depth: Infinity })
 
-const file_name = `./published/publish_report_${new Date()
+const file_name = `./reports/publish_${NETWORK}_${new Date()
   .toISOString()
-  .replace(/:/g, '-')}_${NETWORK}.json`
+  .replace(/:/g, '-')}.json`
 
 writeFileSync(file_name, JSON.stringify(publish_object, null, 2))
 
