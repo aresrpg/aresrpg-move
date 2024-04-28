@@ -14,8 +14,6 @@
 AresRPG is a multiplayer voxel RPG which has no serverside database, everything
 is stored on [Sui](https://sui.io/).
 
-Here is a description of the flow used.
-
 ## Publish a package
 
 - change the `rev` version in `Move.toml` to correspond to the wanted network
