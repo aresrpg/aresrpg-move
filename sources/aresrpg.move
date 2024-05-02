@@ -3,6 +3,7 @@ module aresrpg::aresrpg {
   use sui::{
     kiosk::{Kiosk, KioskOwnerCap},
     transfer_policy::{TransferPolicy},
+    kiosk_extension,
   };
 
   use std::string::{String};
@@ -11,9 +12,12 @@ module aresrpg::aresrpg {
     character::{Self as a_character, Character},
     registry::{NameRegistry},
     extension::{
+      Self,
+      AresRPG,
       AresRPG_TransferPolicy,
-      place_in_extension,
-      take_from_extension
+      place_character_in_extension,
+      take_character_from_extension,
+      take_character_from_kiosk
     },
     version::Version
   };
@@ -30,7 +34,7 @@ module aresrpg::aresrpg {
     sex: String,
     version: &Version,
     ctx: &mut TxContext,
-  ) {
+  ): ID {
     version.assert_latest();
 
     let character = a_character::create(
@@ -41,7 +45,19 @@ module aresrpg::aresrpg {
       ctx,
     );
 
+    let character_id = character.inner_id();
+
     kiosk.lock<Character>(kiosk_owner_cap, policy, character);
+
+    if(!kiosk_extension::is_installed<AresRPG>(kiosk)) {
+      extension::install(kiosk, kiosk_owner_cap, version, ctx);
+    };
+
+    if(!kiosk_extension::is_enabled<AresRPG>(kiosk)) {
+      kiosk_extension::enable<AresRPG>(kiosk, kiosk_owner_cap);
+    };
+
+    character_id
   }
 
   public fun select_character(
@@ -54,7 +70,19 @@ module aresrpg::aresrpg {
   ) {
     version.assert_latest();
 
-    place_in_extension(kiosk, kiosk_cap, policy, character_id, ctx);
+    let character = take_character_from_kiosk(
+      kiosk,
+      kiosk_cap,
+      policy,
+      character_id,
+      ctx
+    );
+
+    place_character_in_extension(
+      kiosk,
+      character,
+      ctx
+    );
   }
 
   /// Take the character from the extension and put it back in the kiosk.
@@ -69,7 +97,7 @@ module aresrpg::aresrpg {
   ) {
     version.assert_latest();
 
-    let character = take_from_extension(
+    let character = take_character_from_extension(
       kiosk,
       kiosk_cap,
       character_id,
@@ -93,7 +121,7 @@ module aresrpg::aresrpg {
   ) {
     version.assert_latest();
 
-    let character = take_from_extension<Character>(
+    let character = take_character_from_extension(
       kiosk,
       kiosk_cap,
       character_id,

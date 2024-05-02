@@ -9,18 +9,24 @@ module aresrpg::extension {
     kiosk_extension,
     transfer_policy::{Self, TransferPolicy, TransferPolicyCap},
     package::Publisher,
-    bag,
+    object_bag::{Self, ObjectBag},
     coin::{Self},
     sui::SUI,
   };
 
-  use aresrpg::version::Version;
+  use aresrpg::{
+    version::Version,
+    character::Character,
+    admin::AdminCap,
+    promise::{await, Promise}
+  };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
+  /// AresRPG can place and lock items in the Kiosk
   const KIOSK_EXTENSION_PERMISSIONS: u128 = 11;
 
-  const EObjectNotExist: u64 = 1;
+  const EWrongPromise : u64 = 1;
   const EExtensionNotInstalled: u64 = 2;
   const ENotOwner: u64 = 3;
 
@@ -80,7 +86,7 @@ module aresrpg::extension {
     ctx: &mut TxContext
   ) {
     version.assert_latest();
-    
+
     // Creates an empty TP and shares an aresrpg_policy<T> object.
     // This can be used to bypass the lock rule under specific conditions.
     // Storing the cap inside the AresRPG_TransferPolicy with no way to access it
@@ -96,57 +102,117 @@ module aresrpg::extension {
     transfer::share_object(aresrpg_policy);
   }
 
-  /// Enables someone to place an asset within the AresRPG extension's Bag,
-  /// creating a Bag entry with the asset's ID as the key and the NFT as the value.
-  /// Requires the existance of am AresRPG_TransferPolicy which can only be created by the creator of type T.
-  /// Assumes item is already placed (& optionally locked) in a Kiosk.
-  public(package) fun place_in_extension<T: key + store>(
+  /// Enables someone to place a character within the AresRPG extension's characters object bag,
+  /// which is contained in the extension storage of the Kiosk.
+  /// Requires the existance of an AresRPG_TransferPolicy which can only be created by the creator of type Character.
+  /// Assumes character is already locked in a Kiosk.
+  public(package) fun place_character_in_extension(
     kiosk: &mut Kiosk,
-    cap: &KioskOwnerCap,
-    policy: &AresRPG_TransferPolicy<T>,
-    item_id: ID,
+    character: Character,
     ctx: &mut TxContext,
   ) {
       assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
 
+      let mut character = character;
+
+      character.set_selected(true);
+      character.set_kiosk_id(object::id(kiosk));
+
+      place_in_characters_bag(kiosk, character.inner_id(), character, ctx);
+  }
+
+  public(package) fun take_character_from_extension(
+      kiosk: &mut Kiosk,
+      kiosk_cap: &KioskOwnerCap,
+      character_id: ID,
+      ctx: &mut TxContext,
+  ): Character {
+      // only allow the owner of the kiosk to take from the bag
+      assert!(kiosk.has_access(kiosk_cap), ENotOwner);
+
+      let mut character = take_from_characters_bag(kiosk, character_id, ctx);
+
+      character.set_selected(false);
+      character.remove_kiosk_id();
+
+      character
+  }
+
+  public(package) fun take_character_from_kiosk(
+    kiosk: &mut Kiosk,
+    cap: &KioskOwnerCap,
+    policy: &AresRPG_TransferPolicy<Character>,
+    character_id: ID,
+    ctx: &mut TxContext,
+  ): Character {
+      assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
+
       kiosk.set_owner(cap, ctx);
-      kiosk.list<T>(cap, item_id, 0);
+      // we list the item to transfer it
+      kiosk.list<Character>(cap, character_id, 0);
 
       let coin = coin::zero<SUI>(ctx);
-      let (object, request) = kiosk.purchase<T>(item_id, coin);
+      let (object, request) = kiosk.purchase<Character>(character_id, coin);
 
       let (_item, _paid, _from) = policy.transfer_policy.confirm_request(request);
 
-      place_in_bag<T, ID>(kiosk, item_id, object);
+      object
   }
 
-  /// Allow the admin to lock the object back to the owner's Kiosk.
-  public(package) fun take_from_extension<T: key + store>(
-      kiosk: &mut Kiosk,
-      cap: &KioskOwnerCap,
-      item_id: ID,
-      _ctx: &mut TxContext,
-  ): T {
-      assert!(kiosk.has_access(cap), ENotOwner);
+  public fun borrow_character_val(
+    _admin: &AdminCap,
+    kiosk: &mut Kiosk,
+    character_id: ID,
+    ctx: &mut TxContext
+  ): (Character, Promise<ID>) {
+    let character = take_from_characters_bag(kiosk, character_id, ctx);
+    let promise = await(character_id);
 
-      take_from_bag<T, ID>(kiosk, item_id)
+    (character, promise)
   }
 
-  fun take_from_bag<T: key + store, Key: store + copy + drop>(
-      kiosk: &mut Kiosk,
-      key: Key,
-  ) : T {
-      let ext_storage_mut = kiosk_extension::storage_mut(AresRPG {}, kiosk);
-      assert!(bag::contains(ext_storage_mut, key), EObjectNotExist);
-      bag::remove<Key, T>(ext_storage_mut, key)
-  }
-
-  fun place_in_bag<T: key + store, Key: store + copy + drop>(
-      kiosk: &mut Kiosk,
-      key: Key,
-      item: T,
+  public fun return_character_val(
+    _admin: &AdminCap,
+    kiosk: &mut Kiosk,
+    character: Character,
+    promise: Promise<ID>,
+    ctx: &mut TxContext
   ) {
-      let ext_storage_mut = kiosk_extension::storage_mut(AresRPG {}, kiosk);
-      bag::add(ext_storage_mut, key, item);
+    assert!(promise.value() == character.inner_id(), EWrongPromise);
+
+    promise.resolve();
+    place_in_characters_bag(kiosk, character.inner_id(), character, ctx);
+  }
+
+  fun take_from_characters_bag(
+    kiosk: &mut Kiosk,
+    character_id: ID,
+    ctx: &mut TxContext
+  ): Character {
+    borrow_characters_bag(kiosk, ctx).remove(character_id)
+  }
+
+  fun place_in_characters_bag(
+    kiosk: &mut Kiosk,
+    character_id: ID,
+    character: Character,
+    ctx: &mut TxContext
+  ) {
+    borrow_characters_bag(kiosk, ctx).add(character_id, character);
+  }
+
+  // We need an object bag otherwise it will be impossible
+  // to query a character by its ID.
+  fun borrow_characters_bag(
+    kiosk: &mut Kiosk,
+    ctx: &mut TxContext
+  ): &mut ObjectBag {
+    let extension_bag = kiosk_extension::storage_mut(AresRPG {}, kiosk);
+
+    if(!extension_bag.contains(b"characters")) {
+      extension_bag.add(b"characters", object_bag::new(ctx));
+    };
+
+    extension_bag.borrow_mut(b"characters")
   }
 }

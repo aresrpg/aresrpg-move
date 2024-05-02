@@ -22,7 +22,7 @@ module aresrpg::registry {
 
   public struct NameRegistry has key, store {
     id: UID,
-    registry: Table<String, address>,
+    registry: Table<String, ID>,
   }
 
   // ╔════════════════ [ Write ] ════════════════════════════════════════════ ]
@@ -44,7 +44,7 @@ module aresrpg::registry {
     self.assert_name_available(name);
     assert_name_valid(name);
 
-    table::add(&mut self.registry, name, sender(ctx));
+    self.registry.add(name, object::id_from_address(sender(ctx)));
   }
 
   public(package) fun remove_name(
