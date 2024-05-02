@@ -8,16 +8,21 @@
     "publish::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/publish.js",
     "publish::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/publish.js",
     "upgrade::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/upgrade.js",
-    "upgrade::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/upgrade.js"
+    "upgrade::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/upgrade.js",
+    "policies::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_policies.js",
+    "policies::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_policies.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^20.12.8",
     "dotenv": "^16.4.5"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.51.0",
+    "@aresrpg/aresrpg-sdk": "2.0.3",
+    "@mysten/kiosk": "^0.8.7",
+    "@mysten/sui.js": "^0.52.0",
     "bignumber.js": "^9.1.2"
   }
 }
