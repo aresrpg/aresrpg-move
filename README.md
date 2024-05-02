@@ -4,7 +4,7 @@
 <h1 align=center>AresRPG</h1>
 <p align=center>
   <img src="https://img.shields.io/badge/Made%20with-Move-blue?style=for-the-badge" alt="fully in Move"/>
-  <img src="https://img.shields.io/badge/Powered%20By-Black%20Magic-blueviolet?style=for-the-badge" alt="powered by lsd"/>
+  <img src="https://img.shields.io/badge/Powered%20By-Dark%20Magic-blueviolet?style=for-the-badge" alt="powered by lsd"/>
   <a href="https://discord.gg/aresrpg">
     <img src="https://img.shields.io/discord/265104803531587584.svg?logo=discord&style=for-the-badge" alt="Chat"/>
   </a>
@@ -19,17 +19,11 @@ is stored on [Sui](https://sui.io/).
 - change the `rev` version in `Move.toml` to correspond to the wanted network
 - `npm run publish::<network>`
 - update `publish-at` in `Move.toml`
-- update env in `aresrpg-gamemaster`
-- update env in `aresrpg-dapp`
-- update env in `aresrpg-server`
-- update configs in `k8s`
-  - in `releases/aresrpg-gamemaster`
-  - in `releases/aresrpg-server`
-- update `upgrade.js` in `aresrpg-move`
+- update env in `aresrpg-sdk`
 
 ## Upgrade a package
 
 - make sure the `rev` version in `Move.toml` is correct
 - update the PACKAGE_VERSION in `aresrpg-move/sources/version.move`
 - `npm run upgrade::<network>`
-- same as above
+- update env in `aresrpg-sdk`
