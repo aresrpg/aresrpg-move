@@ -14,3 +14,4 @@ rev = "framework/testnet"
 
 [addresses]
 aresrpg = "0x0"
+aresrpg_treasury = "0x37cf46b499f740e653644bd2f7a8ed97f248e8b3c69d5d12c97d7845a54c0cd8"

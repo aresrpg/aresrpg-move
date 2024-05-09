@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "update::display": "node -r dotenv/config ./scripts/update_display.js",
+    "update::display": "NETWORK=testnet node -r dotenv/config ./scripts/update_display.js",
     "publish::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/publish.js",
     "publish::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/publish.js",
     "upgrade::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/upgrade.js",
@@ -20,7 +20,7 @@
     "dotenv": "^16.4.5"
   },
   "dependencies": {
-    "@aresrpg/aresrpg-sdk": "2.0.3",
+    "@aresrpg/aresrpg-sdk": "file:../aresrpg-sdk",
     "@mysten/kiosk": "^0.8.7",
     "@mysten/sui.js": "^0.52.0",
     "bignumber.js": "^9.1.2"
