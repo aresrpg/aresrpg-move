@@ -6,7 +6,7 @@ module aresrpg::promise {
     value: T
   }
 
-  // ╔════════════════ [ Write ] ═
+  // ╔════════════════ [ Package ] ═
 
   public(package) fun await<T: drop>(value: T): Promise<T> {
     Promise {
@@ -18,7 +18,7 @@ module aresrpg::promise {
     let Promise<T> { value: _ } = self;
   }
 
-  // ╔════════════════ [ Read ] ═
+  // ╔════════════════ [ Public ] ═
 
   public fun value<T: drop>(self: &Promise<T>): &T {
     &self.value

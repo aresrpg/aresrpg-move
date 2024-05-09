@@ -5,7 +5,7 @@ module aresrpg::string {
     ascii
   };
 
-  // ╔════════════════ [ Read ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
   public fun to_lower_case(str: String): String {
     let string = to_ascii(str);

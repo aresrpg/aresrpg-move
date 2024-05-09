@@ -17,8 +17,6 @@ module aresrpg::version {
     current_version: u64
   }
 
-  // ╔════════════════ [ Write ] ════════════════════════════════════════════ ]
-
   fun init(ctx: &mut TxContext) {
     let version = Version {
       id: object::new(ctx),
@@ -28,11 +26,17 @@ module aresrpg::version {
     transfer::share_object(version);
   }
 
+  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
+
   /// Migrate the package to the latest version,
   /// this prevent usage of old functions when the Version object is required
-  entry fun update(self: &mut Version, _: &AdminCap) {
+  entry fun admin_update(self: &mut Version, _: &AdminCap) {
     assert!(self.current_version < PACKAGE_VERSION, EVersionMismatch);
     self.current_version = PACKAGE_VERSION;
+  }
+
+  entry fun admin_freeze(self: &mut Version, _: &AdminCap) {
+    self.current_version = 0;
   }
 
   // ╔════════════════ [ Assertions ] ════════════════════════════════════════════ ]
@@ -41,5 +45,4 @@ module aresrpg::version {
   public fun assert_latest(self: &Version) {
     assert!(self.current_version == PACKAGE_VERSION, EVersionMismatch);
   }
-
 }
