@@ -1,8 +1,13 @@
 module aresrpg::item_stats {
 
-  use aresrpg::admin::AdminCap;
+  // This module is responsible for managing the statistics of an item
 
-// ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
+  use aresrpg::{
+    admin::AdminCap,
+    item::Item,
+  };
+
+// ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
   public struct ItemStatistics has store, copy, drop {
     vitality: u16,
@@ -19,10 +24,15 @@ module aresrpg::item_stats {
     critical_outcomes: u8,
   }
 
+  public struct StatsKey has copy, drop, store {}
+
 // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
 
-  public fun admin_new(
+  /// Allow the admin to compose damages on an item
+  public fun admin_augment_with_damages(
     _admin: &AdminCap,
+    item: &mut Item,
+
     vitality: u16,
     wisdom: u16,
     strength: u16,
@@ -35,8 +45,8 @@ module aresrpg::item_stats {
     critical: u8,
     critical_chance: u8,
     critical_outcomes: u8,
-  ): ItemStatistics {
-    ItemStatistics {
+  ) {
+    item.add_field(StatsKey {}, ItemStatistics {
       vitality,
       wisdom,
       strength,
@@ -49,6 +59,6 @@ module aresrpg::item_stats {
       critical,
       critical_chance,
       critical_outcomes,
-    }
+    });
   }
 }

@@ -1,4 +1,8 @@
 module aresrpg::item {
+
+  // This module allows access to item object creation,
+  // and provide utilities to manage item fields.
+
   use sui::{
     tx_context::{sender},
     package,
@@ -11,7 +15,6 @@ module aresrpg::item {
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EWronItemType: u64 = 1;
-  const EWronItemCategory: u64 = 2;
 
   // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
@@ -86,6 +89,11 @@ module aresrpg::item {
     object::delete(id);
   }
 
+  /// A helper to check if the item type id is correct
+  public(package) fun assert_item_type(self: &Item, item_type: vector<u8>) {
+    assert!(self.item_type == utf8(item_type), EWronItemType);
+  }
+
   public(package) fun add_field<Key: copy + drop + store, Value: store>(
     self: &mut Item,
     key: Key,
@@ -113,21 +121,5 @@ module aresrpg::item {
     key: Key,
   ): &Value {
     dfield::borrow<Key, Value>(&self.id, key)
-  }
-
-  public(package) fun clone(self: &Item, ctx: &mut TxContext): Item {
-    Item {
-      id: object::new(ctx),
-      name: self.name,
-      item_category: self.item_category,
-      item_type: self.item_type,
-      level: self.level,
-    }
-  }
-
-  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
-
-  fun assert_item_category(self: &Item, item_category: vector<u8>) {
-    assert!(self.item_category == utf8(item_category), EWronItemCategory);
   }
 }
