@@ -1,78 +1,39 @@
 module aresrpg::character_inventory {
 
+  // This module manages the inventory of a character
+  // It allows to equip and unequip items.
+
   use std::{
-    string::{utf8, from_ascii, String},
-    type_name::{Self, TypeName}
+    string::{utf8, String},
   };
 
   use sui::{
-    kiosk::PurchaseCap,
-    vec_set::{Self, VecSet}
+    kiosk::{PurchaseCap, Kiosk, KioskOwnerCap},
   };
 
   use aresrpg::{
-    item::Item,
     character::Character,
     version::Version,
-    admin::AdminCap
+    extension
   };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EInvalidSLot: u64 = 1;
-  const EInvalidItem: u64 = 2;
-
-  // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
-
-  public struct EquipmentSettings<> has key, store {
-    id: UID,
-    allowed_types: VecSet<String>
-  }
-
-  fun init(ctx: &mut TxContext) {
-    let settings = EquipmentSettings {
-      id: object::new(ctx),
-      allowed_types: vec_set::singleton(from_ascii(type_name::get<PurchaseCap<Item>>().into_string()))
-    };
-
-    transfer::share_object(settings);
-  }
-
-  // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
-
-  /// Allow a new type of NFT to be equipped onto a character.
-  public fun admin_whitelist_type<T: key + store>(
-    self: &mut EquipmentSettings,
-    _admin: &AdminCap,
-  ) {
-    let name = type_name::get<PurchaseCap<T>>().into_string();
-    self.allowed_types.insert(from_ascii(name));
-  }
-
-  public fun admin_remove_type<T: key + store>(
-    self: &mut EquipmentSettings,
-    _admin: &AdminCap,
-  ) {
-    let name = type_name::get<PurchaseCap<T>>().into_string();
-    self.allowed_types.remove(&from_ascii(name));
-  }
-
-  // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
+  /// Equip an item onto a character, users must borrow characters from their kiosk.
+  /// Only a purchasecap of the item can be equipped to avoid creating a protected policy.
+  /// The purchasecap ensure the NFT stays in the kiosk and is not mutated or transfered
   public fun equip_item<T: key + store>(
     character: &mut Character,
     slot: String,
     item: PurchaseCap<T>,
     version: &Version,
-    settings: &EquipmentSettings,
   ) {
     version.assert_latest();
 
-    let name = from_ascii(type_name::get<T>().into_string());
-
-    assert!(settings.allowed_types.contains(&name), EInvalidItem);
     assert!(item_slot_valid(slot), EInvalidSLot);
 
     let inventory = character.borrow_inventory_mut();
@@ -80,15 +41,26 @@ module aresrpg::character_inventory {
     inventory.add(slot, item);
   }
 
+  /// Unequip an item from a selected character (in extension)
+  /// All items have to be unequipped before the character can be withdrawn
   public fun unequip_item<T: key + store>(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     slot: String,
     version: &Version,
+    ctx: &mut TxContext
   ): PurchaseCap<T> {
     version.assert_latest();
 
     assert!(item_slot_valid(slot), EInvalidSLot);
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let inventory = character.borrow_inventory_mut();
 
     inventory.remove(slot)
