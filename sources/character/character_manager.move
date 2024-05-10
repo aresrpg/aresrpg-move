@@ -1,16 +1,19 @@
 module aresrpg::character_manager {
 
+  // This module is responsible for managing the characters.
+  // It is the entry point for creating, deleting, and modifying characters.
+
   use sui::{
     kiosk::{Kiosk, KioskOwnerCap},
     transfer_policy::{TransferPolicy},
     kiosk_extension,
   };
 
-  use std::string::{Self, String};
+  use std::string::String;
 
   use aresrpg::{
     character::{Self as a_character, Character},
-    character_stats::{Self, CharacterStatistics},
+    character_stats,
     character_registry::{NameRegistry},
     extension::{
       Self,
@@ -20,15 +23,16 @@ module aresrpg::character_manager {
     },
     protected_policy::AresRPG_TransferPolicy,
     version::Version,
-    item::Item
   };
 
-  // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  public struct StatsKey has copy, drop, store {}
+  const EInventoryNotEmpty: u64 = 1;
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
+  /// Create a character and lock it in the kiosk.
+  /// Returns the ID of the character for chaining.
   public fun create_and_lock_character(
     kiosk: &mut Kiosk,
     kiosk_owner_cap: &KioskOwnerCap,
@@ -51,7 +55,9 @@ module aresrpg::character_manager {
     );
 
     // Add the stats ability
-    character.add_field(StatsKey {}, character_stats::new());
+    // Instead of adding more fields and grow the complexity of the character itself
+    // we add those additional abilities on top of it to make it more modular.
+    character_stats::add_to_character(&mut character);
 
     let character_id = object::id(&character);
 
@@ -68,6 +74,7 @@ module aresrpg::character_manager {
     character_id
   }
 
+  /// Move the character from the kiosk to the extension.
   public fun select_character(
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
@@ -92,7 +99,7 @@ module aresrpg::character_manager {
     );
   }
 
-  /// Take the character from the extension and put it back in the kiosk.
+  /// Take the character from the extension and lock it back in the kiosk.
   public fun unselect_character(
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
@@ -109,6 +116,8 @@ module aresrpg::character_manager {
       character_id,
       ctx
     );
+
+    assert!(character.borrow_inventory().is_empty(), EInventoryNotEmpty);
 
     kiosk.lock(kiosk_cap, policy, character);
   }
@@ -134,90 +143,4 @@ module aresrpg::character_manager {
 
     character.delete(name_registry, ctx);
   }
-
-  public fun reset_character_stats(
-    kiosk: &mut Kiosk,
-    cap: &KioskOwnerCap,
-    character: &mut Character,
-    orb_of_reset: &Item,
-    policy: &AresRPG_TransferPolicy<Item>,
-    version: &Version,
-    ctx: &mut TxContext,
-  ) {
-    version.assert_latest();
-    orb_of_reset.assert_item_type(string::utf8(b"reset_orb"));
-
-    let item = policy.extract_from_kiosk<Item>(
-      kiosk,
-      cap,
-      object::id(orb_of_reset),
-      ctx
-    );
-
-    item.destroy();
-
-    let stats = borrow_stats_mut(character);
-    stats.reset();
-  }
-
-  public fun add_vitality_stats(
-    character: &mut Character,
-    amount: u16,
-    version: &Version,
-  ) {
-    version.assert_latest();
-    borrow_stats_mut(character).add_vitality(amount);
-  }
-
-  public fun add_wisdom_stats(
-    character: &mut Character,
-    amount: u16,
-    version: &Version,
-  ) {
-    version.assert_latest();
-    borrow_stats_mut(character).add_wisdom(amount);
-  }
-
-  public fun add_strength_stats(
-    character: &mut Character,
-    amount: u16,
-    version: &Version,
-  ) {
-    version.assert_latest();
-    borrow_stats_mut(character).add_strength(amount);
-  }
-
-  public fun add_intelligence_stats(
-    character: &mut Character,
-    amount: u16,
-    version: &Version,
-  ) {
-    version.assert_latest();
-    borrow_stats_mut(character).add_intelligence(amount);
-  }
-
-  public fun add_chance_stats(
-    character: &mut Character,
-    amount: u16,
-    version: &Version,
-  ) {
-    version.assert_latest();
-    borrow_stats_mut(character).add_chance(amount);
-  }
-
-  public fun add_agility_stats(
-    character: &mut Character,
-    amount: u16,
-    version: &Version,
-  ) {
-    version.assert_latest();
-    borrow_stats_mut(character).add_agility(amount);
-  }
-
-  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
-
-  fun borrow_stats_mut(character: &mut Character): &mut CharacterStatistics {
-    character.borrow_field_mut<StatsKey, CharacterStatistics>(StatsKey {})
-  }
-
 }
