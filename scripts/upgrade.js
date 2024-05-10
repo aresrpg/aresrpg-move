@@ -63,7 +63,7 @@ console.log('==================== [ UPDATING VERSION ] ====================')
 const tx = new TransactionBlock()
 
 tx.moveCall({
-  target: `${package_id}::version::update`,
+  target: `${package_id}::version::admin_update`,
   arguments: [tx.object(sdk.VERSION), tx.object(sdk.ADMIN_CAP)],
 })
 

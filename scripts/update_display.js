@@ -1,5 +1,6 @@
 import { TransactionBlock } from '@mysten/sui.js/transactions'
-import { client, keypair } from './client.js'
+import { sdk, keypair } from './client.js'
+import { ITEM_CATEGORY } from '@aresrpg/aresrpg-sdk/items'
 
 const DISPLAY = '0x261de0a1d4c5239e1b2a4974d343268a44e9b082de93b9c3646e935bc7b7a418'
 const DISPLAY_TYPE =
@@ -9,15 +10,15 @@ const txb = new TransactionBlock()
 
 console.log('Updating display...', keypair.getPublicKey().toSuiAddress())
 
-// txb.moveCall({
-//   target: '0x2::display::edit',
-//   typeArguments: [DISPLAY_TYPE],
-//   arguments: [
-//     txb.object(DISPLAY),
-//     txb.pure.string('link'),
-//     txb.pure.string('https://aresrpg.world/classe/{classe}'),
-//   ],
-// })
+txb.moveCall({
+  target: '0x2::display::edit',
+  typeArguments: [DISPLAY_TYPE],
+  arguments: [
+    txb.object(DISPLAY),
+    txb.pure.string('link'),
+    txb.pure.string('https://aresrpg.world/classe/{classe}'),
+  ],
+})
 
 txb.moveCall({
   target: '0x2::display::edit',
@@ -31,7 +32,7 @@ txb.moveCall({
   ],
 })
 
-const result = await client.signAndExecuteTransactionBlock({
+const result = await sdk.sui_client.signAndExecuteTransactionBlock({
   transactionBlock: txb,
   signer: keypair,
 })
