@@ -1,5 +1,8 @@
 module aresrpg::character_registry {
 
+  // This module is responsible for managing the names of characters in the game.
+  // It ensures that names are unique and valid.
+
   use sui::{
     table::{Self, Table},
     tx_context::{sender}
@@ -61,6 +64,8 @@ module aresrpg::character_registry {
     self.registry.length()
   }
 
+  /// This is used by the client in a dry run transaction to be more efficient
+  /// than querying the entire registry to read its content.
   public fun assert_name_available(
     self: &NameRegistry,
     name: String
