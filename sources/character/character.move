@@ -1,4 +1,8 @@
 module aresrpg::character {
+
+  // This module is the base character entity,
+  // it is used to initiate characters and manage their core datas.
+
   use sui::{
     tx_context::{sender},
     package,
@@ -75,6 +79,12 @@ module aresrpg::character {
 
     transfer::public_transfer(publisher, sender(ctx));
     transfer::public_transfer(display, sender(ctx));
+  }
+
+  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
+
+  public fun borrow_inventory(self: &Character): &ObjectBag {
+    &self.inventory
   }
 
   // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
@@ -167,7 +177,9 @@ module aresrpg::character {
     // prevent deletion of a character with items in inventory
     assert!(inventory.is_empty(), EInventoryNotEmpty);
 
+    inventory.destroy_empty();
     name_registry.remove_name(name);
+
     event::emit(Update { target: sender(ctx) });
     object::delete(id);
   }
