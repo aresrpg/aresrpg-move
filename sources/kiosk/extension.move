@@ -1,8 +1,9 @@
 module aresrpg::extension {
 
-  /// This module contains the AresRPG extension for the Kiosk.
-  /// It allows the AresRPG game master (admin) to borrow mutably characters
-  /// which are placed into the extension storage in order to update their stats.
+  // This module contains the AresRPG extension for the Kiosk.
+  // It allows the AresRPG game master (admin) to borrow mutably characters
+  // which are placed into the extension storage in order to update their stats.
+  // The extension also allows the game master to place items in its storage.
 
   use sui::{
     kiosk::{Kiosk, KioskOwnerCap},
@@ -67,7 +68,7 @@ module aresrpg::extension {
 
   /// Enables the admin to mutate a character stored in the extension.
   /// The promise ensure that the character is returned to the extension.
-  public fun borrow_character_val(
+  public fun admin_borrow_character_val(
     _admin: &AdminCap,
     kiosk: &mut Kiosk,
     character_id: ID,
@@ -80,7 +81,7 @@ module aresrpg::extension {
     (character, promise)
   }
 
-  public fun return_character_val(
+  public fun admin_return_character_val(
     _admin: &AdminCap,
     kiosk: &mut Kiosk,
     character: Character,
@@ -175,5 +176,18 @@ module aresrpg::extension {
 
     let obag = borrow_object_bag(kiosk, b"items", ctx);
     obag.remove<ID, Item>(item_id)
+  }
+
+  public(package) fun borrow_character_mut(
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
+    ctx: &mut TxContext
+  ): &mut Character {
+    // only allow the owner of the kiosk to borrow a character
+    assert!(kiosk.has_access(kiosk_cap), ENotOwner);
+
+    let obag = borrow_object_bag(kiosk, b"characters", ctx);
+    obag.borrow_mut(character_id)
   }
 }

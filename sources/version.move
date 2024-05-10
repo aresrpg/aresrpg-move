@@ -1,5 +1,8 @@
 module aresrpg::version {
 
+  // This module is used to keep track of the current version of the package
+  // and to ensure that the package is not used with an outdated version.
+
   use aresrpg::admin::AdminCap;
 
   // The version is used to make sure important functions
@@ -26,7 +29,7 @@ module aresrpg::version {
     transfer::share_object(version);
   }
 
-  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
 
   /// Migrate the package to the latest version,
   /// this prevent usage of old functions when the Version object is required
@@ -35,11 +38,12 @@ module aresrpg::version {
     self.current_version = PACKAGE_VERSION;
   }
 
+  /// Freeze the package to temporarily disable all public facing functions
   entry fun admin_freeze(self: &mut Version, _: &AdminCap) {
     self.current_version = 0;
   }
 
-  // ╔════════════════ [ Assertions ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
   /// Ensure the version is the latest
   public fun assert_latest(self: &Version) {

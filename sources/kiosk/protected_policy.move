@@ -15,10 +15,7 @@ module aresrpg::protected_policy {
   // ╔════════════════ [ Types ] ══════════════════════════════════════════════ ]
 
   /// This policy grants AresRPG the right to bypass a Kiosk's lock and rules.
-  /// It should be minted by any creators wanting to allow
-  /// their NFTs to be directly equipped on AresRPG's characters.
-  /// The action itself is safe but it will allow anyone to sell a character
-  /// with the NFT on it, hence bypassing any other transfer policy made by the creator.
+  /// Its purpose is to allow characters and items to be freely used by the game.
   public struct AresRPG_TransferPolicy<phantom T> has key, store {
     id: UID,
     transfer_policy: TransferPolicy<T>,
@@ -27,7 +24,7 @@ module aresrpg::protected_policy {
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
-  /// Mint an AresRPG_TransferPolicy allowing AresRPG to freely dispose of a NFT after purschasing it.
+  /// Mint an AresRPG_TransferPolicy allowing AresRPG to freely dispose of a NFT type after purschasing it.
   /// Can only be performed by the publisher of type T.
   /// !! Make sure to understand the implications of this policy before using it !!
   public fun mint_and_share_aresrpg_policy<T>(
