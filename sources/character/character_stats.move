@@ -37,10 +37,13 @@ public struct StatsKey has copy, drop, store {}
 
   /// Add stat points to the character.
   public fun admin_add_stat_points(
-    _admin: &AdminCap,
+    admin: &AdminCap,
     stat_points: u16,
     character: &mut Character,
+    ctx: &TxContext
   ) {
+    admin.verify(ctx);
+
     let stats = borrow_stats_mut(character);
     stats.available_points = stats.available_points + stat_points;
   }

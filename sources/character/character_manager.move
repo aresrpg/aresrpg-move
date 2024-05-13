@@ -123,6 +123,7 @@ module aresrpg::character_manager {
   }
 
   /// We use the protected policy to freely access the character and delete it.
+  /// A character must be unselected before being deleted.
   public fun delete_character(
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,

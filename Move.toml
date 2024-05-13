@@ -1,11 +1,10 @@
 [package]
 name = "aresrpg"
 version = "0.1.0"
-published-at = "0x350423e36ceda0cc9eb6fc24644a5209a86bb5663ae1835c4c21097a09857679"
+published-at = "0x20695982a54d29b8d18a1fa4b37f26df910970822b4b693ffc71ee958c82c3e3"
 edition = "2024.beta"
 
-# license = ""           # e.g., "MIT", "GPL", "Apache 2.0"
-authors = ["Sceat (fetch@sceat.xyz)"]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
+authors = ["Sceat (fetch@sceat.xyz)"]
 
 [dependencies.Sui]
 git = "https://github.com/MystenLabs/sui.git"
@@ -14,4 +13,3 @@ rev = "framework/testnet"
 
 [addresses]
 aresrpg = "0x0"
-aresrpg_treasury = "0x37cf46b499f740e653644bd2f7a8ed97f248e8b3c69d5d12c97d7845a54c0cd8"

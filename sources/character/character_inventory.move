@@ -12,7 +12,6 @@ module aresrpg::character_inventory {
   };
 
   use aresrpg::{
-    character::Character,
     version::Version,
     extension
   };
@@ -23,19 +22,29 @@ module aresrpg::character_inventory {
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
-  /// Equip an item onto a character, users must borrow characters from their kiosk.
+  /// Equip an item onto a character, users must select the character first.
   /// Only a purchasecap of the item can be equipped to avoid creating a protected policy.
   /// The purchasecap ensure the NFT stays in the kiosk and is not mutated or transfered
+  /// To unselect a character, the user must unequip all items.
   public fun equip_item<T: key + store>(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     slot: String,
     item: PurchaseCap<T>,
     version: &Version,
+    ctx: &mut TxContext
   ) {
     version.assert_latest();
 
     assert!(item_slot_valid(slot), EInvalidSLot);
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let inventory = character.borrow_inventory_mut();
 
     inventory.add(slot, item);

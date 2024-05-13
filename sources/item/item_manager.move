@@ -19,6 +19,8 @@ module aresrpg::item_manager {
       place_item_in_extension,
       take_item_from_extension,
     },
+    promise::{await, Promise},
+    protected_policy::AresRPG_TransferPolicy,
   };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
@@ -52,35 +54,98 @@ module aresrpg::item_manager {
     kiosk.lock(kiosk_cap, policy, item);
   }
 
+  public fun split_item(
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    policy: &TransferPolicy<Item>,
+    item_id: ID,
+    amount: u32,
+    version: &Version,
+    ctx: &mut TxContext,
+  ) {
+    version.assert_latest();
+
+    let item = kiosk.borrow_mut<Item>(kiosk_cap, item_id);
+    let new_item = item.split(amount, ctx);
+
+    kiosk.lock(kiosk_cap, policy, new_item);
+  }
+
+  public fun merge_items(
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    protected_policy: &AresRPG_TransferPolicy<Item>,
+    target_item_id: ID,
+    items_ids: &mut vector<ID>,
+    version: &Version,
+    ctx: &mut TxContext,
+  ) {
+    version.assert_latest();
+
+    let (mut target_item, promise) = kiosk.borrow_val<Item>(kiosk_cap, target_item_id);
+
+    while (!items_ids.is_empty()) {
+      let item_id = items_ids.pop_back();
+      let item = protected_policy.extract_from_kiosk(
+        kiosk,
+        kiosk_cap,
+        item_id,
+        ctx
+      );
+
+      target_item.merge(item);
+    };
+
+    kiosk.return_val(target_item, promise);
+  }
+
   // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
 
   /// Allow the admin to mint an item
-  /// and place it in the aresrpg extension of a given Kiosk
-  /// The AresRPG extension must be installed on the Kiosk
   /// This is used to create items that players win during the gameplay
+  /// The function return a promise to make sure the item is locked in the extension
+  /// But before it can be augmented with stats and other properties
   public fun admin_mint(
-    _admin: &AdminCap,
-    kiosk: &mut Kiosk,
+    admin: &AdminCap,
     name: String,
     item_category: String,
+    item_set: String,
     item_type: String,
     level: u8,
+    amount: u32,
+    stackable: bool,
     ctx: &mut TxContext
-  ): ID {
-    assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
+  ): (Item, Promise<ID>) {
+    admin.verify(ctx);
 
     let item = a_item::new(
       name,
       item_category,
+      item_set,
       item_type,
       level,
+      amount,
+      stackable,
       ctx
     );
 
     let item_id = object::id(&item);
 
-    place_item_in_extension(kiosk, item, ctx);
+    (item, await(item_id))
+  }
 
-    item_id
+  public fun admin_lock_newly_minted(
+    admin: &AdminCap,
+    kiosk: &mut Kiosk,
+    item: Item,
+    promise: Promise<ID>,
+    ctx: &mut TxContext
+  ) {
+    admin.verify(ctx);
+    assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
+
+    promise.resolve(object::id(&item));
+
+    place_item_in_extension(kiosk, item, ctx);
   }
 }

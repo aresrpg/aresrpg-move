@@ -11,7 +11,7 @@ module aresrpg::string {
     let string = to_ascii(str);
     let (mut bytes, mut i) = (ascii::into_bytes(string), 0);
 
-    while (i < vector::length(&bytes)) {
+    while (i < bytes.length()) {
       let byte = vector::borrow_mut(&mut bytes, i);
       if (*byte >= 65u8 && *byte <= 90u8) *byte = *byte + 32u8;
       i = i + 1;
@@ -24,7 +24,7 @@ module aresrpg::string {
     let string = to_ascii(str);
     let (mut bytes, mut i) = (ascii::into_bytes(string), 0);
 
-    while (i < vector::length(&bytes)) {
+    while (i < bytes.length()) {
       let byte = vector::borrow_mut(&mut bytes, i);
       if (*byte == 32u8) return true;
       i = i + 1;

@@ -69,11 +69,13 @@ module aresrpg::extension {
   /// Enables the admin to mutate a character stored in the extension.
   /// The promise ensure that the character is returned to the extension.
   public fun admin_borrow_character_val(
-    _admin: &AdminCap,
+    admin: &AdminCap,
     kiosk: &mut Kiosk,
     character_id: ID,
     ctx: &mut TxContext
   ): (Character, Promise<ID>) {
+    admin.verify(ctx);
+
     let obag = borrow_object_bag(kiosk, b"characters", ctx);
     let character = obag.remove(character_id);
     let promise = await(character_id);
@@ -82,15 +84,16 @@ module aresrpg::extension {
   }
 
   public fun admin_return_character_val(
-    _admin: &AdminCap,
+    admin: &AdminCap,
     kiosk: &mut Kiosk,
     character: Character,
     promise: Promise<ID>,
     ctx: &mut TxContext
   ) {
+    admin.verify(ctx);
     assert!(promise.value() == object::id(&character), EWrongPromise);
 
-    promise.resolve();
+    promise.resolve(object::id(&character));
 
     borrow_object_bag(kiosk, b"characters", ctx)
       .add(object::id(&character), character);
@@ -189,5 +192,18 @@ module aresrpg::extension {
 
     let obag = borrow_object_bag(kiosk, b"characters", ctx);
     obag.borrow_mut(character_id)
+  }
+
+  public(package) fun borrow_item_mut(
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    item_id: ID,
+    ctx: &mut TxContext
+  ): &mut Item {
+    // only allow the owner of the kiosk to borrow an item
+    assert!(kiosk.has_access(kiosk_cap), ENotOwner);
+
+    let obag = borrow_object_bag(kiosk, b"items", ctx);
+    obag.borrow_mut(item_id)
   }
 }

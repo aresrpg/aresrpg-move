@@ -62,6 +62,7 @@ module aresrpg::character {
         utf8(b"image_url"),
         utf8(b"description"),
         utf8(b"project_url"),
+        utf8(b"creator"),
     ];
 
     let values = vector[
@@ -70,6 +71,7 @@ module aresrpg::character {
         utf8(b"https://app.aresrpg.world/classe/{classe}_{sex}.jpg"),
         utf8(b"Character part of the AresRPG universe."),
         utf8(b"https://aresrpg.world"),
+        utf8(b"AresRPG"),
     ];
 
     let publisher = package::claim(otw, ctx);
@@ -92,34 +94,42 @@ module aresrpg::character {
   /// Set the position of a character
   public fun admin_set_position(
     self: &mut Character,
-    _admin: &AdminCap,
+    admin: &AdminCap,
     position: String,
+    ctx: &TxContext
   ) {
+    admin.verify(ctx);
     self.position = position;
   }
 
   public fun admin_set_health(
     self: &mut Character,
-    _admin: &AdminCap,
+    admin: &AdminCap,
     health: u16,
+    ctx: &TxContext
   ) {
+    admin.verify(ctx);
     self.health = health;
   }
 
   public fun admin_set_soul(
     self: &mut Character,
-    _admin: &AdminCap,
+    admin: &AdminCap,
     soul: u8,
+    ctx: &TxContext
   ) {
+    admin.verify(ctx);
     self.soul = soul;
   }
 
   /// Add experience to a character
   public fun admin_set_experience(
     self: &mut Character,
-    _admin: &AdminCap,
+    admin: &AdminCap,
     experience: u32,
+    ctx: &TxContext
   ) {
+    admin.verify(ctx);
     assert!(experience > self.experience, EExperienceTooLow);
     self.experience = experience;
   }

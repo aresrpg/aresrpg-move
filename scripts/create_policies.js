@@ -45,13 +45,13 @@ item_policy
   .shareAndTransferCap(DEPLOYER)
 
 tx.moveCall({
-  target: `${sdk.PACKAGE_ID}::extension::mint_and_share_aresrpg_policy`,
+  target: `${sdk.PACKAGE_ID}::protected_policy::mint_and_share_aresrpg_policy`,
   typeArguments: [`${sdk.PACKAGE_ID}::character::Character`],
   arguments: [tx.object(sdk.PUBLISHER_CHARACTER), tx.object(sdk.VERSION)],
 })
 
 tx.moveCall({
-  target: `${sdk.PACKAGE_ID}::extension::mint_and_share_aresrpg_policy`,
+  target: `${sdk.PACKAGE_ID}::protected_policy::mint_and_share_aresrpg_policy`,
   typeArguments: [`${sdk.PACKAGE_ID}::item::Item`],
   arguments: [tx.object(sdk.PUBLISHER_ITEM), tx.object(sdk.VERSION)],
 })

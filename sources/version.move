@@ -7,7 +7,7 @@ module aresrpg::version {
 
   // The version is used to make sure important functions
   // are not called on an outdated version of the package.
-  const PACKAGE_VERSION: u64 = 1;
+  const PACKAGE_VERSION: u64 = 2;
 
   // ╔════════════════ [ Constants ] ════════════════════════════════════════════ ]
 
@@ -33,13 +33,23 @@ module aresrpg::version {
 
   /// Migrate the package to the latest version,
   /// this prevent usage of old functions when the Version object is required
-  entry fun admin_update(self: &mut Version, _: &AdminCap) {
+  entry fun admin_update(
+    self: &mut Version,
+    admin: &AdminCap,
+    ctx: &TxContext
+  ) {
+    admin.verify(ctx);
     assert!(self.current_version < PACKAGE_VERSION, EVersionMismatch);
     self.current_version = PACKAGE_VERSION;
   }
 
   /// Freeze the package to temporarily disable all public facing functions
-  entry fun admin_freeze(self: &mut Version, _: &AdminCap) {
+  entry fun admin_freeze(
+    self: &mut Version,
+    admin: &AdminCap,
+    ctx: &TxContext
+  ) {
+    admin.verify(ctx);
     self.current_version = 0;
   }
 

@@ -14,7 +14,9 @@ module aresrpg::item {
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EWronItemType: u64 = 1;
+  const EWronItemType: u64 = 101;
+  const EWrongAmount: u64 = 102;
+  const ENotStackable: u64 = 103;
 
   // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
@@ -23,12 +25,38 @@ module aresrpg::item {
     name: String,
     /// todo: await enum support
     /// misc, consumable, relic, rune, mount
-    /// hat, cloack, amulet, ring, belt, boots,
-    /// bow, wand, staff, dagger, scythe, axe, hammer, shovel, sword, fishing_rod, pickaxe
+    /// hat,
+    /// cloack,
+    /// amulet,
+    /// ring,
+    /// belt,
+    /// boots,
+    /// bow,
+    /// wand,
+    /// staff,
+    /// dagger,
+    /// scythe,
+    /// axe,
+    /// hammer,
+    /// shovel,
+    /// sword,
+    /// fishing_rod,
+    /// pickaxe,
+    /// title,
     item_category: String,
+    item_set: String,
     /// unique type (ex: reset_orb)
     item_type: String,
     level: u8,
+
+    /// the amount of items in the stack
+    /// this value can only be bigger than 1 if the item is stackable
+    /// which means he has no stats nor damages
+    amount: u32,
+    /// weither the item is stackable or not
+    /// if the item is stackable, it means it can be merged with other items
+    /// otherwise the amount must always be 1
+    stackable: bool
   }
 
   public struct ITEM has drop {}
@@ -40,14 +68,16 @@ module aresrpg::item {
         utf8(b"image_url"),
         utf8(b"description"),
         utf8(b"project_url"),
+        utf8(b"creator")
     ];
 
     let values = vector[
         utf8(b"{name}"),
-        utf8(b"https://app.aresrpg.world/item/{type}"),
-        utf8(b"https://app.aresrpg.world/item/{type}.jpg"),
+        utf8(b"https://app.aresrpg.world"),
+        utf8(b"https://app.aresrpg.world/item/{item_type}.jpg"),
         utf8(b"Item part of the AresRPG universe."),
         utf8(b"https://aresrpg.world"),
+        utf8(b"AresRPG")
     ];
 
     let publisher = package::claim(otw, ctx);
@@ -59,21 +89,43 @@ module aresrpg::item {
     transfer::public_transfer(display, sender(ctx));
   }
 
+  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
+
+  public fun amount(self: &Item): u32 {
+    self.amount
+  }
+
+  public fun stackable(self: &Item): bool {
+    self.stackable
+  }
+
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   public(package) fun new(
     name: String,
     item_category: String,
+    item_set: String,
     item_type: String,
     level: u8,
+    amount: u32,
+    stackable: bool,
     ctx: &mut TxContext
   ): Item {
+
+    if(amount > 1) {
+      // if the item has an amount greater than 1, it must be stackable
+      assert!(stackable, ENotStackable);
+    };
+
     Item {
       id: object::new(ctx),
       name,
       item_category,
+      item_set,
       item_type,
       level,
+      amount,
+      stackable
     }
   }
 
@@ -82,8 +134,11 @@ module aresrpg::item {
       id,
       name: _,
       item_category: _,
+      item_set: _,
       item_type: _,
       level: _,
+      amount: _,
+      stackable: _
     } = self;
 
     object::delete(id);
@@ -121,5 +176,49 @@ module aresrpg::item {
     key: Key,
   ): &Value {
     dfield::borrow<Key, Value>(&self.id, key)
+  }
+
+  /// Some items like simple wood (to make sturdy sui tables) can be stacked
+  /// to avoid minting thousands of objects.
+  public(package) fun split(
+    self: &mut Item,
+    amount: u32,
+    ctx: &mut TxContext
+  ): Item {
+    // the split amount must be at least 1
+    assert!(amount >= 1, EWrongAmount);
+    // the item amount must be above the split amount (so 2 or more)
+    assert!(self.amount > amount, EWrongAmount);
+    // the item must be stackable
+    assert!(self.stackable, ENotStackable);
+
+    let new_item = new(
+      self.name,
+      self.item_category,
+      self.item_set,
+      self.item_type,
+      self.level,
+      amount,
+      true,
+      ctx
+    );
+
+    self.amount = self.amount - amount;
+
+    new_item
+  }
+
+  public(package) fun merge(
+    self: &mut Item,
+    item: Item,
+  ) {
+    // the item must be stackable
+    assert!(self.stackable, ENotStackable);
+    // the item must be the same type
+    assert!(self.item_type == item.item_type, EWronItemType);
+
+    self.amount = self.amount + item.amount;
+
+    item.destroy();
   }
 }

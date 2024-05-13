@@ -10,7 +10,11 @@
     "upgrade::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/upgrade.js",
     "upgrade::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/upgrade.js",
     "policies::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_policies.js",
-    "policies::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_policies.js"
+    "policies::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_policies.js",
+    "admin::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/temp_admin.js",
+    "admin::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/temp_admin.js",
+    "mint_item::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/mint_item.js",
+    "mint_item::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/mint_item.js"
   },
   "keywords": [],
   "author": "",

@@ -6,6 +6,10 @@ module aresrpg::promise {
     value: T
   }
 
+  // ╔════════════════ [ Constants ] ═
+
+  const EWrongValue: u64 = 1;
+
   // ╔════════════════ [ Package ] ═
 
   public(package) fun await<T: drop>(value: T): Promise<T> {
@@ -14,8 +18,9 @@ module aresrpg::promise {
     }
   }
 
-  public(package) fun resolve<T: drop>(self: Promise<T>) {
-    let Promise<T> { value: _ } = self;
+  public(package) fun resolve<T: drop>(self: Promise<T>, verify: T) {
+    let Promise<T> { value } = self;
+    assert!(value == verify, EWrongValue);
   }
 
   // ╔════════════════ [ Public ] ═
