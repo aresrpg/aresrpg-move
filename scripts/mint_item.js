@@ -13,49 +13,74 @@ console.log(' ')
 
 const tx = new TransactionBlock()
 
-sdk.admin_mint_item({
-  tx,
-  recipient_kiosk: '0xa7b9d490972387e9fc40f08c5c30ccb573098428153154a052d41d75ca80c629',
-  name: 'Dagues de Seti',
-  item_category: ITEM_CATEGORY.DAGGER,
-  item_set: 'Pharaoh',
-  item_type: 'seti_dagger',
-  level: 1,
-  amount: 145,
-  // stats: {
-  //   vitality: 30,
-  //   wisdom: 30,
-  //   strength: 0,
-  //   intelligence: 0,
-  //   chance: 0,
-  //   agility: 0,
-  //   range: 0,
-  //   movement: 1,
-  //   action: 0,
-  //   critical: 0,
-  //   raw_damage: 5,
-  //   critical_chance: 1,
-  //   critical_outcomes: 50,
+const ITEMS = [
+  {
+    name: 'Golden ring',
+    item_category: ITEM_CATEGORY.RING,
+    item_set: 'none',
+    item_type: 'golden_ring',
+    level: 12,
+    amount: 1,
+    stats: {
+      action: 1,
+    },
+  },
+  {
+    name: 'Minotron',
+    item_category: ITEM_CATEGORY.HAT,
+    item_set: 'none',
+    item_type: 'minotron',
+    level: 23,
+    amount: 1,
+    stats: {
+      vitality: 50,
+      strength: 40,
+    },
+  },
+  {
+    name: 'Dague de Seti',
+    item_category: ITEM_CATEGORY.DAGGER,
+    item_set: 'Pharaoh',
+    item_type: 'seti_dagger',
+    level: 1,
+    stats: {
+      wisdom: 5,
+      intelligence: 25,
+      agility: 10,
+      raw_damage: 5,
+      water_resistance: 5,
+      air_resistance: 5,
+    },
+    damages: [
+      {
+        from: 12,
+        to: 14,
+        damage_type: 'damage',
+        element: 'air',
+      },
+      {
+        from: 3,
+        to: 5,
+        damage_type: 'life_steal',
+        element: 'water',
+      },
+    ],
+  },
+  {
+    name: 'Mighty early Access key',
+    item_category: ITEM_CATEGORY.MISC,
+    item_set: 'none',
+    item_type: 'early_access_key',
+    level: 1,
+  },
+]
 
-  //   earth_resistance: 0,
-  //   fire_resistance: 5,
-  //   water_resistance: 0,
-  //   air_resistance: 0,
-  // },
-  // damages: [
-  //   {
-  //     from: 12,
-  //     to: 14,
-  //     damage_type: 'damage',
-  //     element: 'air',
-  //   },
-  //   {
-  //     from: 3,
-  //     to: 5,
-  //     damage_type: 'life_steal',
-  //     element: 'water',
-  //   },
-  // ],
+ITEMS.forEach(item => {
+  sdk.admin_mint_item({
+    tx,
+    recipient_kiosk: '0xa7b9d490972387e9fc40f08c5c30ccb573098428153154a052d41d75ca80c629',
+    ...item,
+  })
 })
 
 const { digest } = await sdk.sui_client.signAndExecuteTransactionBlock({
