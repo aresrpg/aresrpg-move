@@ -18,7 +18,7 @@ module aresrpg::character_inventory {
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EInvalidSLot: u64 = 1;
+  const EInvalidSLot: u64 = 101;
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 

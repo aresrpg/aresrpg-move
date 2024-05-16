@@ -68,7 +68,7 @@ module aresrpg::character {
     let values = vector[
         utf8(b"{name}"),
         utf8(b"https://app.aresrpg.world"),
-        utf8(b"https://app.aresrpg.world/classe/{classe}_{sex}.jpg"),
+        utf8(b"http://assets.aresrpg.world/classe/{classe}_{sex}.jpg"),
         utf8(b"Character part of the AresRPG universe."),
         utf8(b"https://aresrpg.world"),
         utf8(b"AresRPG"),
