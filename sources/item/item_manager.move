@@ -5,7 +5,8 @@ module aresrpg::item_manager {
   use sui::{
     kiosk::{Kiosk, KioskOwnerCap},
     transfer_policy::TransferPolicy,
-    kiosk_extension
+    kiosk_extension,
+    event::emit
   };
 
   use std::string::{String};
@@ -27,8 +28,17 @@ module aresrpg::item_manager {
 
   const EExtensionNotInstalled: u64 = 1;
 
-  // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
 
+  public struct ItemMintEvent has copy, drop {
+    item_id: ID,
+    kiosk_id: ID,
+  }
+
+  public struct ItemWithdrawEvent has copy, drop {
+    kiosk_id: ID,
+    item_id: ID,
+  }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
@@ -50,6 +60,11 @@ module aresrpg::item_manager {
       item_id,
       ctx
     );
+
+    emit(ItemWithdrawEvent {
+      kiosk_id: object::id(kiosk),
+      item_id: object::id(&item)
+    });
 
     kiosk.lock(kiosk_cap, policy, item);
   }
@@ -145,6 +160,11 @@ module aresrpg::item_manager {
     assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
 
     promise.resolve(object::id(&item));
+
+    emit(ItemMintEvent {
+      item_id: object::id(&item),
+      kiosk_id: object::id(kiosk)
+    });
 
     place_item_in_extension(kiosk, item, ctx);
   }

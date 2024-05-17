@@ -7,7 +7,6 @@ module aresrpg::character {
     tx_context::{sender},
     package,
     display,
-    event,
     dynamic_field as dfield,
     object_bag::{Self, ObjectBag}
   };
@@ -46,11 +45,6 @@ module aresrpg::character {
   }
 
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
-
-  public struct Update has copy, drop {
-    /// The address of the user impacted by the update
-    target: address
-  }
 
   // one time witness
   public struct CHARACTER has drop {}
@@ -151,8 +145,6 @@ module aresrpg::character {
 
     name_registry.add_name(name, ctx);
 
-    event::emit(Update { target: sender(ctx) });
-
     Character {
       id: object::new(ctx),
       name,
@@ -170,7 +162,6 @@ module aresrpg::character {
   public(package) fun delete(
     character: Character,
     name_registry: &mut NameRegistry,
-    ctx: &TxContext
   ) {
     let Character {
       id,
@@ -190,7 +181,6 @@ module aresrpg::character {
     inventory.destroy_empty();
     name_registry.remove_name(name);
 
-    event::emit(Update { target: sender(ctx) });
     object::delete(id);
   }
 

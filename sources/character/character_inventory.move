@@ -9,6 +9,7 @@ module aresrpg::character_inventory {
 
   use sui::{
     kiosk::{PurchaseCap, Kiosk, KioskOwnerCap},
+    event::emit
   };
 
   use aresrpg::{
@@ -19,6 +20,22 @@ module aresrpg::character_inventory {
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EInvalidSLot: u64 = 101;
+
+  // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
+
+  public struct ItemEquipEvent has copy, drop {
+    character_id: ID,
+    slot: String,
+    kiosk_id: ID,
+    item_id: ID,
+  }
+
+  public struct ItemUnequipEvent has copy, drop {
+    character_id: ID,
+    slot: String,
+    kiosk_id: ID,
+    item_id: ID,
+  }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
@@ -38,6 +55,13 @@ module aresrpg::character_inventory {
     version.assert_latest();
 
     assert!(item_slot_valid(slot), EInvalidSLot);
+
+    emit(ItemEquipEvent {
+      character_id,
+      slot,
+      kiosk_id: object::id(kiosk),
+      item_id: item.purchase_cap_item(),
+    });
 
     let character = extension::borrow_character_mut(
       kiosk,
@@ -71,8 +95,16 @@ module aresrpg::character_inventory {
       ctx
     );
     let inventory = character.borrow_inventory_mut();
+    let cap = inventory.remove<String, PurchaseCap<T>>(slot);
 
-    inventory.remove(slot)
+    emit(ItemUnequipEvent {
+      character_id,
+      slot,
+      kiosk_id: object::id(kiosk),
+      item_id: cap.purchase_cap_item(),
+    });
+
+    cap
   }
 
   // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]

@@ -7,6 +7,7 @@ module aresrpg::character_manager {
     kiosk::{Kiosk, KioskOwnerCap},
     transfer_policy::{TransferPolicy},
     kiosk_extension,
+    event::emit
   };
 
   use std::string::String;
@@ -28,6 +29,26 @@ module aresrpg::character_manager {
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EInventoryNotEmpty: u64 = 1;
+
+  // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
+
+  public struct CharacterCreateEvent has copy, drop {
+    character_id: ID
+  }
+
+  public struct CharacterSelectEvent has copy, drop {
+    character_id: ID,
+    kiosk_id: ID
+  }
+
+  public struct CharacterUnselectEvent has copy, drop {
+    character_id: ID,
+    kiosk_id: ID
+  }
+
+  public struct CharacterDeleteEvent has copy, drop {
+    character_id: ID
+  }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
@@ -71,6 +92,10 @@ module aresrpg::character_manager {
       kiosk_extension::enable<AresRPG>(kiosk, kiosk_owner_cap);
     };
 
+    emit(CharacterCreateEvent {
+      character_id
+    });
+
     character_id
   }
 
@@ -97,6 +122,11 @@ module aresrpg::character_manager {
       character,
       ctx
     );
+
+    emit(CharacterSelectEvent {
+      character_id,
+      kiosk_id: object::id(kiosk)
+    });
   }
 
   /// Take the character from the extension and lock it back in the kiosk.
@@ -120,6 +150,11 @@ module aresrpg::character_manager {
     assert!(character.borrow_inventory().is_empty(), EInventoryNotEmpty);
 
     kiosk.lock(kiosk_cap, policy, character);
+
+    emit(CharacterUnselectEvent {
+      character_id,
+      kiosk_id: object::id(kiosk)
+    });
   }
 
   /// We use the protected policy to freely access the character and delete it.
@@ -142,6 +177,10 @@ module aresrpg::character_manager {
       ctx
     );
 
-    character.delete(name_registry, ctx);
+    character.delete(name_registry);
+
+    emit(CharacterDeleteEvent {
+      character_id
+    });
   }
 }

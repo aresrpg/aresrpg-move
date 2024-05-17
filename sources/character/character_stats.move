@@ -4,6 +4,7 @@ module aresrpg::character_stats {
 
   use sui::{
     kiosk::{Kiosk, KioskOwnerCap},
+    event::emit
   };
 
   use aresrpg::{
@@ -17,6 +18,12 @@ module aresrpg::character_stats {
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
 public struct StatsKey has copy, drop, store {}
+
+// ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
+
+public struct StatsResetEvent has copy, drop {
+  character_id: ID,
+}
 
 // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
@@ -76,6 +83,8 @@ public struct StatsKey has copy, drop, store {}
 
     let stats = borrow_stats_mut(character);
     stats.reset();
+
+    emit(StatsResetEvent { character_id: object::id(character) });
   }
 
   /// Add stats to the character if there are enough available points
