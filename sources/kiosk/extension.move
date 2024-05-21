@@ -33,6 +33,8 @@ module aresrpg::extension {
   /// Extension Key for Kiosk AresRpg extension.
   public struct AresRPG has drop {}
 
+  public struct StorageKey<phantom T> has copy, drop, store {}
+
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
   /// Enables someone to install the AresRPG extension in their Kiosk.
@@ -76,7 +78,7 @@ module aresrpg::extension {
   ): (Character, Promise<ID>) {
     admin.verify(ctx);
 
-    let obag = borrow_object_bag(kiosk, b"characters", ctx);
+    let obag = borrow_object_bag(kiosk, StorageKey<Character> {}, ctx);
     let character = obag.remove(character_id);
     let promise = await(character_id);
 
@@ -95,7 +97,7 @@ module aresrpg::extension {
 
     promise.resolve(object::id(&character));
 
-    borrow_object_bag(kiosk, b"characters", ctx)
+    borrow_object_bag(kiosk, StorageKey<Character> {}, ctx)
       .add(object::id(&character), character);
   }
 
@@ -103,9 +105,9 @@ module aresrpg::extension {
 
   // We need an object bag otherwise it will be impossible
   // to query a NFTs by their IDs.
-  fun borrow_object_bag(
+  fun borrow_object_bag<T>(
     kiosk: &mut Kiosk,
-    key: vector<u8>,
+    key: StorageKey<T>,
     ctx: &mut TxContext
   ): &mut ObjectBag {
     let extension_bag = kiosk_extension::storage_mut(AresRPG {}, kiosk);
@@ -135,7 +137,7 @@ module aresrpg::extension {
     character.set_selected(true);
     character.set_kiosk_id(object::id(kiosk));
 
-    borrow_object_bag(kiosk, b"characters", ctx)
+    borrow_object_bag(kiosk, StorageKey<Character> {}, ctx)
       .add(object::id(&character), character);
   }
 
@@ -148,7 +150,7 @@ module aresrpg::extension {
       // only allow the owner of the kiosk to take from the bag
     assert!(kiosk.has_access(kiosk_cap), ENotOwner);
 
-    let obag = borrow_object_bag(kiosk, b"characters", ctx);
+    let obag = borrow_object_bag(kiosk, StorageKey<Character> {}, ctx);
     let mut character = obag.remove<ID, Character>(character_id);
 
     character.set_selected(false);
@@ -164,7 +166,7 @@ module aresrpg::extension {
   ) {
     assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
 
-    borrow_object_bag(kiosk, b"items", ctx)
+    borrow_object_bag(kiosk, StorageKey<Item> {}, ctx)
       .add(object::id(&item), item);
   }
 
@@ -177,7 +179,7 @@ module aresrpg::extension {
     // only allow the owner of the kiosk to take from the bag
     assert!(kiosk.has_access(kiosk_cap), ENotOwner);
 
-    let obag = borrow_object_bag(kiosk, b"items", ctx);
+    let obag = borrow_object_bag(kiosk, StorageKey<Item> {}, ctx);
     obag.remove<ID, Item>(item_id)
   }
 
@@ -190,7 +192,7 @@ module aresrpg::extension {
     // only allow the owner of the kiosk to borrow a character
     assert!(kiosk.has_access(kiosk_cap), ENotOwner);
 
-    let obag = borrow_object_bag(kiosk, b"characters", ctx);
+    let obag = borrow_object_bag(kiosk, StorageKey<Character> {}, ctx);
     obag.borrow_mut(character_id)
   }
 
@@ -203,7 +205,7 @@ module aresrpg::extension {
     // only allow the owner of the kiosk to borrow an item
     assert!(kiosk.has_access(kiosk_cap), ENotOwner);
 
-    let obag = borrow_object_bag(kiosk, b"items", ctx);
+    let obag = borrow_object_bag(kiosk, StorageKey<Item> {}, ctx);
     obag.borrow_mut(item_id)
   }
 }

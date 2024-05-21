@@ -1,7 +1,7 @@
 [package]
 name = "aresrpg"
 version = "0.1.0"
-published-at = "0xc7231ccb27bc7eebdf0b6efe3ccc43d6aa7319f2119391abc9e9dfaf8abb4238"
+published-at = "0x6ba0c99e51807ba12c749a12a72a881558379888c21316a23be32c9cc9e4d079"
 edition = "2024.beta"
 
 authors = ["Sceat (fetch@sceat.xyz)"]
@@ -10,6 +10,13 @@ authors = ["Sceat (fetch@sceat.xyz)"]
 git = "https://github.com/MystenLabs/sui.git"
 subdir = "crates/sui-framework/packages/sui-framework"
 rev = "framework/testnet"
+override = true
+
+[dependencies.suifrens]
+git = "https://github.com/MystenLabs/apps.git"
+subdir = "suifrens/suifrens"
+rev = "testnet"
 
 [addresses]
 aresrpg = "0x0"
+suifrens = "0x80d7de9c4a56194087e0ba0bf59492aa8e6a5ee881606226930827085ddf2332"

@@ -3,9 +3,7 @@ module aresrpg::character_inventory {
   // This module manages the inventory of a character
   // It allows to equip and unequip items.
 
-  use std::{
-    string::{utf8, String},
-  };
+  use std::string::String;
 
   use sui::{
     kiosk::{PurchaseCap, Kiosk, KioskOwnerCap},
@@ -20,6 +18,12 @@ module aresrpg::character_inventory {
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EInvalidSLot: u64 = 101;
+
+  // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
+
+  public struct SlotKey has copy, drop, store {
+    slot: String,
+  }
 
   // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
 
@@ -71,7 +75,7 @@ module aresrpg::character_inventory {
     );
     let inventory = character.borrow_inventory_mut();
 
-    inventory.add(slot, item);
+    inventory.add(SlotKey { slot }, item);
   }
 
   /// Unequip an item from a selected character (in extension)
@@ -95,7 +99,7 @@ module aresrpg::character_inventory {
       ctx
     );
     let inventory = character.borrow_inventory_mut();
-    let cap = inventory.remove<String, PurchaseCap<T>>(slot);
+    let cap = inventory.remove<SlotKey, PurchaseCap<T>>(SlotKey { slot });
 
     emit(ItemUnequipEvent {
       character_id,
@@ -110,22 +114,22 @@ module aresrpg::character_inventory {
   // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
 
   fun item_slot_valid(slot: String): bool {
-    slot == utf8(b"hat") ||
-    slot == utf8(b"amulet") ||
-    slot == utf8(b"cloack") ||
-    slot == utf8(b"left_ring") ||
-    slot == utf8(b"right_ring") ||
-    slot == utf8(b"belt") ||
-    slot == utf8(b"boots") ||
-    slot == utf8(b"pet") ||
-    slot == utf8(b"weapon") ||
-    slot == utf8(b"relic_1") ||
-    slot == utf8(b"relic_2") ||
-    slot == utf8(b"relic_3") ||
-    slot == utf8(b"relic_4") ||
-    slot == utf8(b"relic_5") ||
-    slot == utf8(b"relic_6") ||
-    slot == utf8(b"title")
+    slot == b"hat".to_string() ||
+    slot == b"amulet".to_string() ||
+    slot == b"cloack".to_string() ||
+    slot == b"left_ring".to_string() ||
+    slot == b"right_ring".to_string() ||
+    slot == b"belt".to_string() ||
+    slot == b"boots".to_string() ||
+    slot == b"pet".to_string() ||
+    slot == b"weapon".to_string() ||
+    slot == b"relic_1".to_string() ||
+    slot == b"relic_2".to_string() ||
+    slot == b"relic_3".to_string() ||
+    slot == b"relic_4".to_string() ||
+    slot == b"relic_5".to_string() ||
+    slot == b"relic_6".to_string() ||
+    slot == b"title".to_string()
   }
 
 }

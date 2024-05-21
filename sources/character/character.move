@@ -46,6 +46,8 @@ module aresrpg::character {
 
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
+  public struct KioskIdKey has copy, drop, store {}
+
   // one time witness
   public struct CHARACTER has drop {}
 
@@ -215,11 +217,11 @@ module aresrpg::character {
   }
 
   public(package) fun set_kiosk_id(self: &mut Character, kiosk_id: ID) {
-    dfield::add(&mut self.id, b"kiosk_id", kiosk_id);
+    dfield::add(&mut self.id, KioskIdKey {}, kiosk_id);
   }
 
   public(package) fun remove_kiosk_id(self: &mut Character) {
-    dfield::remove<vector<u8>, ID>(&mut self.id, b"kiosk_id");
+    dfield::remove<KioskIdKey, ID>(&mut self.id, KioskIdKey {});
   }
 
 
