@@ -68,7 +68,7 @@ const ITEMS = [
   },
   {
     name: 'Mighty early Access key',
-    item_category: ITEM_CATEGORY.MISC,
+    item_category: ITEM_CATEGORY.KEY,
     item_set: 'none',
     item_type: 'early_access_key',
     level: 1,

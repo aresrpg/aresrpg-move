@@ -117,6 +117,9 @@ module aresrpg::item {
       assert!(stackable, ENotStackable);
     };
 
+    // the item amount must be 1, 10, or 100
+    assert!(amount == 1 || amount == 10 || amount == 100, EWrongAmount);
+
     Item {
       id: object::new(ctx),
       name,
@@ -185,10 +188,8 @@ module aresrpg::item {
     amount: u32,
     ctx: &mut TxContext
   ): Item {
-    // the split amount must be at least 1
-    assert!(amount >= 1, EWrongAmount);
-    // the item amount must be above the split amount (so 2 or more)
-    assert!(self.amount > amount, EWrongAmount);
+    // the amount must be 1, 10, or 100
+    assert!(amount == 1 || amount == 10 || amount == 100, EWrongAmount);
     // the item must be stackable
     assert!(self.stackable, ENotStackable);
 
@@ -205,6 +206,9 @@ module aresrpg::item {
 
     self.amount = self.amount - amount;
 
+    // the new item amount must be 1, 10, or 100
+    assert!(self.amount == 1 || self.amount == 10 || self.amount == 100, EWrongAmount);
+
     new_item
   }
 
@@ -218,6 +222,9 @@ module aresrpg::item {
     assert!(self.item_type == item.item_type, EWronItemType);
 
     self.amount = self.amount + item.amount;
+
+    // the final amount must be 1, 10, or 100
+    assert!(self.amount == 1 || self.amount == 10 || self.amount == 100, EWrongAmount);
 
     item.destroy();
   }

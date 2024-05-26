@@ -26,7 +26,7 @@ module aresrpg::item_manager {
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EExtensionNotInstalled: u64 = 1;
+  const EExtensionNotInstalled: u64 = 101;
 
   // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
 
