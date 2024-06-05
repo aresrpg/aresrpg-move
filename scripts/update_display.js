@@ -1,7 +1,7 @@
-import { TransactionBlock } from '@mysten/sui.js/transactions'
+import { Transaction } from '@mysten/sui/transactions'
 import { sdk, keypair } from './client.js'
 
-const txb = new TransactionBlock()
+const txb = new Transaction()
 
 console.log('Updating display...', keypair.getPublicKey().toSuiAddress())
 
@@ -25,8 +25,8 @@ txb.moveCall({
   ],
 })
 
-const result = await sdk.sui_client.signAndExecuteTransactionBlock({
-  transactionBlock: txb,
+const result = await sdk.sui_client.signAndExecuteTransaction({
+  transaction: txb,
   signer: keypair,
 })
 

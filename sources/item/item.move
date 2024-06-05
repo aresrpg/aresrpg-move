@@ -99,6 +99,10 @@ module aresrpg::item {
     self.stackable
   }
 
+  public fun item_type(self: &Item): String {
+    self.item_type
+  }
+
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   public(package) fun new(
@@ -116,9 +120,6 @@ module aresrpg::item {
       // if the item has an amount greater than 1, it must be stackable
       assert!(stackable, ENotStackable);
     };
-
-    // the item amount must be 1, 10, or 100
-    assert!(amount == 1 || amount == 10 || amount == 100, EWrongAmount);
 
     Item {
       id: object::new(ctx),
@@ -188,8 +189,6 @@ module aresrpg::item {
     amount: u32,
     ctx: &mut TxContext
   ): Item {
-    // the amount must be 1, 10, or 100
-    assert!(amount == 1 || amount == 10 || amount == 100, EWrongAmount);
     // the item must be stackable
     assert!(self.stackable, ENotStackable);
 
@@ -206,8 +205,9 @@ module aresrpg::item {
 
     self.amount = self.amount - amount;
 
-    // the new item amount must be 1, 10, or 100
-    assert!(self.amount == 1 || self.amount == 10 || self.amount == 100, EWrongAmount);
+    // Both items must have at least 1 item
+    assert!(self.amount >= 1, EWrongAmount);
+    assert!(new_item.amount >= 1, EWrongAmount);
 
     new_item
   }
@@ -222,9 +222,6 @@ module aresrpg::item {
     assert!(self.item_type == item.item_type, EWronItemType);
 
     self.amount = self.amount + item.amount;
-
-    // the final amount must be 1, 10, or 100
-    assert!(self.amount == 1 || self.amount == 10 || self.amount == 100, EWrongAmount);
 
     item.destroy();
   }

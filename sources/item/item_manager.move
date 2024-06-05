@@ -6,7 +6,6 @@ module aresrpg::item_manager {
     kiosk::{Kiosk, KioskOwnerCap},
     transfer_policy::TransferPolicy,
     kiosk_extension,
-    event::emit
   };
 
   use std::string::{String};
@@ -22,23 +21,12 @@ module aresrpg::item_manager {
     },
     promise::{await, Promise},
     protected_policy::AresRPG_TransferPolicy,
+    events,
   };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EExtensionNotInstalled: u64 = 101;
-
-  // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
-
-  public struct ItemMintEvent has copy, drop {
-    item_id: ID,
-    kiosk_id: ID,
-  }
-
-  public struct ItemWithdrawEvent has copy, drop {
-    kiosk_id: ID,
-    item_id: ID,
-  }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
@@ -61,12 +49,37 @@ module aresrpg::item_manager {
       ctx
     );
 
-    emit(ItemWithdrawEvent {
-      kiosk_id: object::id(kiosk),
-      item_id: object::id(&item)
-    });
+    events::emit_item_withdraw_event(
+      object::id(&item),
+      object::id(kiosk)
+    );
 
     kiosk.lock(kiosk_cap, policy, item);
+  }
+
+  public fun destroy_item(
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    protected_policy: &AresRPG_TransferPolicy<Item>,
+    item_id: ID,
+    version: &Version,
+    ctx: &mut TxContext,
+  ) {
+    version.assert_latest();
+
+    let item = protected_policy.extract_from_kiosk(
+      kiosk,
+      kiosk_cap,
+      item_id,
+      ctx
+    );
+
+    events::emit_item_destroy_event(
+      object::id(&item),
+      object::id(kiosk)
+    );
+
+    item.destroy();
   }
 
   public fun split_item(
@@ -77,41 +90,84 @@ module aresrpg::item_manager {
     amount: u32,
     version: &Version,
     ctx: &mut TxContext,
-  ) {
+  ): ID {
     version.assert_latest();
 
     let item = kiosk.borrow_mut<Item>(kiosk_cap, item_id);
     let new_item = item.split(amount, ctx);
+    let item_id = object::id(&new_item);
+
+    events::emit_item_split_event(
+      item_id,
+      object::id(kiosk),
+      object::id(&new_item)
+    );
 
     kiosk.lock(kiosk_cap, policy, new_item);
+
+    item_id
   }
 
-  public fun merge_items(
+  public fun merge_items_single_kiosk(
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
-    protected_policy: &AresRPG_TransferPolicy<Item>,
     target_item_id: ID,
-    items_ids: &mut vector<ID>,
+    item_id: ID,
+    protected_policy: &AresRPG_TransferPolicy<Item>,
     version: &Version,
     ctx: &mut TxContext,
   ) {
     version.assert_latest();
 
-    let (mut target_item, promise) = kiosk.borrow_val<Item>(kiosk_cap, target_item_id);
+    let item = protected_policy.extract_from_kiosk(
+      kiosk,
+      kiosk_cap,
+      item_id,
+      ctx
+    );
 
-    while (!items_ids.is_empty()) {
-      let item_id = items_ids.pop_back();
-      let item = protected_policy.extract_from_kiosk(
-        kiosk,
-        kiosk_cap,
-        item_id,
-        ctx
-      );
+    events::emit_item_merge_event(
+      target_item_id,
+      object::id(kiosk),
+      item_id,
+      object::id(kiosk)
+    );
 
-      target_item.merge(item);
-    };
+    let target_item = kiosk.borrow_mut<Item>(kiosk_cap, target_item_id);
 
-    kiosk.return_val(target_item, promise);
+    target_item.merge(item);
+  }
+
+  public fun merge_items_different_kiosk(
+    target_kiosk: &mut Kiosk,
+    target_kiosk_cap: &KioskOwnerCap,
+    target_item_id: ID,
+    item_kiosk: &mut Kiosk,
+    item_kiosk_cap: &KioskOwnerCap,
+    item_id: ID,
+    protected_policy: &AresRPG_TransferPolicy<Item>,
+    version: &Version,
+    ctx: &mut TxContext,
+  ) {
+    version.assert_latest();
+
+    let item = protected_policy.extract_from_kiosk(
+      item_kiosk,
+      item_kiosk_cap,
+      item_id,
+      ctx
+    );
+
+    events::emit_item_merge_event(
+      target_item_id,
+      object::id(target_kiosk),
+      item_id,
+      object::id(item_kiosk)
+    );
+
+    let target_item = target_kiosk.borrow_mut<Item>(target_kiosk_cap, target_item_id);
+
+    target_item.merge(item);
   }
 
   // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
@@ -161,10 +217,14 @@ module aresrpg::item_manager {
 
     promise.resolve(object::id(&item));
 
-    emit(ItemMintEvent {
-      item_id: object::id(&item),
-      kiosk_id: object::id(kiosk)
-    });
+    events::emit_item_mint_event(
+      object::id(&item),
+      object::id(kiosk)
+    );
+
+    if(item.stackable()) {
+
+    };
 
     place_item_in_extension(kiosk, item, ctx);
   }

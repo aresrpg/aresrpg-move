@@ -7,7 +7,6 @@ module aresrpg::character_manager {
     kiosk::{Kiosk, KioskOwnerCap},
     transfer_policy::{TransferPolicy},
     kiosk_extension,
-    event::emit
   };
 
   use std::string::String;
@@ -24,31 +23,12 @@ module aresrpg::character_manager {
     },
     protected_policy::AresRPG_TransferPolicy,
     version::Version,
+    events
   };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EInventoryNotEmpty: u64 = 1;
-
-  // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
-
-  public struct CharacterCreateEvent has copy, drop {
-    character_id: ID
-  }
-
-  public struct CharacterSelectEvent has copy, drop {
-    character_id: ID,
-    kiosk_id: ID
-  }
-
-  public struct CharacterUnselectEvent has copy, drop {
-    character_id: ID,
-    kiosk_id: ID
-  }
-
-  public struct CharacterDeleteEvent has copy, drop {
-    character_id: ID
-  }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
@@ -92,9 +72,7 @@ module aresrpg::character_manager {
       kiosk_extension::enable<AresRPG>(kiosk, kiosk_owner_cap);
     };
 
-    emit(CharacterCreateEvent {
-      character_id
-    });
+    events::emit_character_create_event(character_id);
 
     character_id
   }
@@ -123,10 +101,7 @@ module aresrpg::character_manager {
       ctx
     );
 
-    emit(CharacterSelectEvent {
-      character_id,
-      kiosk_id: object::id(kiosk)
-    });
+    events::emit_character_select_event(character_id, object::id(kiosk));
   }
 
   /// Take the character from the extension and lock it back in the kiosk.
@@ -151,10 +126,7 @@ module aresrpg::character_manager {
 
     kiosk.lock(kiosk_cap, policy, character);
 
-    emit(CharacterUnselectEvent {
-      character_id,
-      kiosk_id: object::id(kiosk)
-    });
+    events::emit_character_unselect_event(character_id, object::id(kiosk));
   }
 
   /// We use the protected policy to freely access the character and delete it.
@@ -179,8 +151,6 @@ module aresrpg::character_manager {
 
     character.delete(name_registry);
 
-    emit(CharacterDeleteEvent {
-      character_id
-    });
+    events::emit_character_delete_event(character_id);
   }
 }

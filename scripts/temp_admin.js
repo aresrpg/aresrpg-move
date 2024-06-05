@@ -1,4 +1,4 @@
-import { TransactionBlock } from '@mysten/sui.js/transactions'
+import { Transaction } from '@mysten/sui/transactions'
 import { NETWORK, keypair, sdk } from './client.js'
 
 const DEPLOYER = keypair.getPublicKey().toSuiAddress()
@@ -10,12 +10,13 @@ console.log('super admin:', DEPLOYER)
 console.log('recipient:', RECIPIENT)
 console.log(' ')
 
-const tx = new TransactionBlock()
+const tx = new Transaction()
 
+sdk.add_header(tx)
 sdk.admin_promote({ tx, recipient: RECIPIENT })
 
-const { digest } = await sdk.sui_client.signAndExecuteTransactionBlock({
-  transactionBlock: tx,
+const { digest } = await sdk.sui_client.signAndExecuteTransaction({
+  transaction: tx,
   signer: keypair,
 })
 

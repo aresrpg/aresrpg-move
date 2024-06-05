@@ -1,9 +1,9 @@
 import { sdk, keypair, NETWORK } from './client.js'
-import { TransactionBlock } from '@mysten/sui.js/transactions'
+import { Transaction } from '@mysten/sui/transactions'
 import { execSync } from 'child_process'
 import { find_types } from '../../aresrpg-sdk/src/types-parser.js'
 
-const txb = new TransactionBlock()
+const txb = new Transaction()
 
 console.log('==================== [ PUBLISHING PACKAGE ] ====================')
 console.log('network:', NETWORK)
@@ -30,9 +30,9 @@ txb.transferObjects([upgrade_cap], keypair.getPublicKey().toSuiAddress())
 
 console.log('publishing package...')
 
-const result = await sdk.sui_client.signAndExecuteTransactionBlock({
+const result = await sdk.sui_client.signAndExecuteTransaction({
   signer: keypair,
-  transactionBlock: txb,
+  transaction: txb,
   options: {
     showEffects: true,
   },

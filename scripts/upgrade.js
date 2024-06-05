@@ -1,8 +1,8 @@
 import { keypair, NETWORK, sdk } from './client.js'
-import { TransactionBlock, UpgradePolicy } from '@mysten/sui.js/transactions'
+import { Transaction, UpgradePolicy } from '@mysten/sui/transactions'
 import { execSync } from 'child_process'
 
-const txb = new TransactionBlock()
+const txb = new Transaction()
 
 console.log('==================== [ UPGRADING PACKAGE ] ====================')
 console.log('network:', NETWORK)
@@ -24,7 +24,7 @@ const ticket = txb.moveCall({
   target: '0x2::package::authorize_upgrade',
   arguments: [
     txb.object(sdk.UPGRADE_CAP),
-    txb.pure(UpgradePolicy.COMPATIBLE),
+    txb.pure.u8(UpgradePolicy.COMPATIBLE),
     txb.pure(build_digest),
   ],
 })
@@ -32,7 +32,7 @@ const ticket = txb.moveCall({
 const receipt = txb.upgrade({
   modules,
   dependencies,
-  packageId: sdk.LATEST_PACKAGE_ID,
+  package: sdk.LATEST_PACKAGE_ID,
   ticket,
 })
 
@@ -43,9 +43,9 @@ txb.moveCall({
 
 console.log('upgrading package...')
 
-const result = await sdk.sui_client.signAndExecuteTransactionBlock({
+const result = await sdk.sui_client.signAndExecuteTransaction({
   signer: keypair,
-  transactionBlock: txb,
+  transaction: txb,
   options: {
     showEffects: true,
   },
@@ -60,16 +60,16 @@ console.log('==================== [ x ] ====================')
 
 console.log('==================== [ UPDATING VERSION ] ====================')
 
-const tx = new TransactionBlock()
+const tx = new Transaction()
 
 tx.moveCall({
   target: `${package_id}::version::admin_update`,
   arguments: [tx.object(sdk.VERSION), tx.object(sdk.ADMIN_CAP)],
 })
 
-const migrate_result = await sdk.sui_client.signAndExecuteTransactionBlock({
+const migrate_result = await sdk.sui_client.signAndExecuteTransaction({
   signer: keypair,
-  transactionBlock: tx,
+  transaction: tx,
   options: {
     showEffects: true,
   },

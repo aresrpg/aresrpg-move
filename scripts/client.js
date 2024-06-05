@@ -1,6 +1,6 @@
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519'
-import { getFullnodeUrl } from '@mysten/sui.js/client'
-import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography'
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519'
+import { getFullnodeUrl } from '@mysten/sui/client'
+import { decodeSuiPrivateKey } from '@mysten/sui/cryptography'
 import { SDK } from '@aresrpg/aresrpg-sdk/sui'
 import { Network } from '@mysten/kiosk'
 

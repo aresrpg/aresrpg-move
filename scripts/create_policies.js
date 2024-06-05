@@ -1,4 +1,4 @@
-import { TransactionBlock } from '@mysten/sui.js/transactions'
+import { Transaction } from '@mysten/sui/transactions'
 import { NETWORK, keypair, sdk } from './client.js'
 import { TransferPolicyTransaction, percentageToBasisPoints } from '@mysten/kiosk'
 
@@ -6,20 +6,22 @@ const CHARACTER_ROYALTY = 10
 const ITEM_ROYALTY = 5
 const MIN_TRANSFER_FEE = 100_000_000 // (0.1 sui)
 const DEPLOYER = keypair.getPublicKey().toSuiAddress()
+const ARESRPG = '0x37cf46b499f740e653644bd2f7a8ed97f248e8b3c69d5d12c97d7845a54c0cd8'
 
 console.log('==================== [ CREATING POLICIES ] ====================')
 console.log('network:', NETWORK)
 console.log('public key:', DEPLOYER)
+console.log('policy owner:', ARESRPG)
 console.log(' ')
 
-const tx = new TransactionBlock()
+const tx = new Transaction()
 const character_policy = new TransferPolicyTransaction({
   kioskClient: sdk.kiosk_client,
-  transactionBlock: tx,
+  transaction: tx,
 })
 const item_policy = new TransferPolicyTransaction({
   kioskClient: sdk.kiosk_client,
-  transactionBlock: tx,
+  transaction: tx,
 })
 
 await character_policy.create({
@@ -36,13 +38,18 @@ character_policy
   .addLockRule()
   .addRoyaltyRule(percentageToBasisPoints(CHARACTER_ROYALTY), MIN_TRANSFER_FEE)
   .addPersonalKioskRule()
-  .shareAndTransferCap(DEPLOYER)
+  .shareAndTransferCap(ARESRPG)
+
+tx.moveCall({
+  target: `${sdk.LATEST_PACKAGE_ID}::amount_rule::add`,
+  arguments: [item_policy.getPolicy(), item_policy.getPolicyCap()],
+})
 
 item_policy
   .addLockRule()
   .addRoyaltyRule(percentageToBasisPoints(ITEM_ROYALTY), MIN_TRANSFER_FEE)
   .addPersonalKioskRule()
-  .shareAndTransferCap(DEPLOYER)
+  .shareAndTransferCap(ARESRPG)
 
 tx.moveCall({
   target: `${sdk.PACKAGE_ID}::protected_policy::mint_and_share_aresrpg_policy`,
@@ -57,8 +64,8 @@ tx.moveCall({
 })
 
 // Sign and execute transaction block.
-const result = await sdk.sui_client.signAndExecuteTransactionBlock({
-  transactionBlock: tx,
+const result = await sdk.sui_client.signAndExecuteTransaction({
+  transaction: tx,
   signer: keypair,
   options: { showEffects: true },
 })

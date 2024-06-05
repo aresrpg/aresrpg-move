@@ -4,8 +4,9 @@ module aresrpg::admin {
 
   // ╔════════════════ [ Constants ] ═══════════════════════════════════════════════ ]
 
-  const EAdminCapExpired: u64 = 1;
-  const ENotSuperAdmin: u64 = 2;
+  const EAdminCapExpired: u64 = 101;
+  const ENotSuperAdmin: u64 = 102;
+  const ESuperAdmin: u64 = 103;
 
   // ╔════════════════ [ Types ] ═══════════════════════════════════════════════ ]
 
@@ -40,6 +41,21 @@ module aresrpg::admin {
     };
 
     transfer::transfer(cap, recipient);
+  }
+
+  // ╔════════════════ [ Public ] ═══════════════════════════════════════════════ ]
+
+  /// Not verified as the admin could be expired
+  entry fun delete_admin_cap(self: AdminCap) {
+    // can't destroy super admin
+    assert!(!self.super_admin(), ESuperAdmin);
+
+    let AdminCap {
+      id,
+      epoch: _
+    } = self;
+
+    object::delete(id);
   }
 
   // ╔════════════════ [ Package ] ═══════════════════════════════════════════════ ]

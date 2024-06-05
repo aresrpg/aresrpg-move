@@ -14,19 +14,21 @@
     "admin::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/temp_admin.js",
     "admin::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/temp_admin.js",
     "mint_item::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/mint_item.js",
-    "mint_item::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/mint_item.js"
+    "mint_item::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/mint_item.js",
+    "recipe::testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_recipe.js",
+    "recipe::mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_recipe.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.14.2",
     "dotenv": "^16.4.5"
   },
   "dependencies": {
-    "@aresrpg/aresrpg-sdk": "^2.4.0",
-    "@mysten/kiosk": "^0.8.10",
-    "@mysten/sui.js": "^0.54.1",
+    "@aresrpg/aresrpg-sdk": "file:../aresrpg-sdk",
+    "@mysten/kiosk": "^0.9.5",
+    "@mysten/sui": "^1.0.5",
     "bignumber.js": "^9.1.2"
   }
 }

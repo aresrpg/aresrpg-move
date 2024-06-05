@@ -9,24 +9,20 @@ module aresrpg::item_feed {
     sui::SUI,
     coin::{Self, Coin},
     dynamic_object_field as dof,
-    event::emit
   };
 
   use suifrens::suifrens::{SuiFren};
 
-  use aresrpg::version::Version;
+  use aresrpg::{
+    version::Version,
+    events
+  };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EAlreadyFed: u64 = 101;
   const EInvalidFeedAmount: u64 = 102;
   const EMaxFeed: u64 = 103;
-
-  // ╔════════════════ [ Events ] ════════════════════════════════════════════ ]
-
-  public struct PetFeedEvent has copy, drop {
-    pet_id: ID
-  }
 
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
@@ -48,7 +44,7 @@ module aresrpg::item_feed {
   ) {
     version.assert_latest();
 
-    emit(PetFeedEvent { pet_id: object::id(suifren) });
+    events::emit_pet_feed_event(object::id(suifren));
 
     let uid_mut = suifren.uid_mut();
 

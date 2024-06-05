@@ -19,7 +19,12 @@ is stored on [Sui](https://sui.io/).
 - change the `rev` version in `Move.toml` to correspond to the wanted network
 - `npm run publish::<network>`
 - update `publish-at` in `Move.toml`
-- update env in `aresrpg-sdk`
+- update env in `aresrpg-sdk` and all services depending on it
+  - `aresrpg-gamemaster`
+  - `aresrpg-server`
+  - `aresrpg-sponsor`
+  - `aresrpg-kiosk-indexer`
+- redeploy `aresrpg-dapp` with the new env
 
 ## Upgrade a package
 

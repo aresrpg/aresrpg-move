@@ -21,12 +21,38 @@ module aresrpg::item_damages {
     element: String
   }
 
-// ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-/// The item is stackable, you can't add damages to it
-const EItemStackable: u64 = 1;
+  /// The item is stackable, you can't add damages to it
+  const EItemStackable: u64 = 1;
 
-// ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
+  // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
+
+  public(package) fun new(
+    from: u16,
+    to: u16,
+    damage_type: String,
+    element: String
+  ): ItemDamages {
+    ItemDamages {
+      from,
+      to,
+      damage_type,
+      element
+    }
+  }
+
+  public(package) fun augment_with_damages(
+    item: &mut Item,
+    damages: vector<ItemDamages>
+  ) {
+    // The item can only have damages if it's not stackable
+    assert!(!item.stackable(), EItemStackable);
+
+    item.add_field(DamagesKey {}, damages);
+  }
+
+  // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
 
   /// Create a new damage object, used by the admin to compose damages on an item
   /// Through creating multiple ones and adding them to a new vector in a subsequent instruction
@@ -40,12 +66,7 @@ const EItemStackable: u64 = 1;
     ctx: &TxContext
   ): ItemDamages {
     admin.verify(ctx);
-    ItemDamages {
-      from,
-      to,
-      damage_type,
-      element
-    }
+    new(from, to, damage_type, element)
   }
 
   /// Allow the admin to compose damages on an item
@@ -56,10 +77,6 @@ const EItemStackable: u64 = 1;
     ctx: &TxContext
   ) {
     admin.verify(ctx);
-
-    // The item can only have damages if it's not stackable
-    assert!(!item.stackable(), EItemStackable);
-
-    item.add_field(DamagesKey {}, damages);
+    augment_with_damages(item, damages);
   }
 }

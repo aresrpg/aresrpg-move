@@ -16,7 +16,8 @@ module aresrpg::extension {
     character::Character,
     admin::AdminCap,
     promise::{await, Promise},
-    item::Item
+    item::Item,
+    events
   };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
@@ -45,6 +46,8 @@ module aresrpg::extension {
     ctx: &mut TxContext,
   ) {
     version.assert_latest();
+
+    events::emit_extension_install_event(object::id(kiosk));
 
     kiosk_extension::add(
       AresRPG {},
