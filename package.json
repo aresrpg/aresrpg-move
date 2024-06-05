@@ -26,7 +26,7 @@
     "dotenv": "^16.4.5"
   },
   "dependencies": {
-    "@aresrpg/aresrpg-sdk": "file:../aresrpg-sdk",
+    "@aresrpg/aresrpg-sdk": "^3.0.0",
     "@mysten/kiosk": "^0.9.5",
     "@mysten/sui": "^1.0.5",
     "bignumber.js": "^9.1.2"
