@@ -1,7 +1,7 @@
 [package]
 name = "aresrpg"
 version = "0.1.0"
-published-at = "0x5bdf4769a517e99a444fe4c88756fbf011002d9b5c3a0656dad1e767e6c96be4"
+published-at = "0xcae9627d916dcff9c16032c4b82041a0245644a8c8c650929e68e12e5ce1b361"
 edition = "2024.beta"
 
 authors = ["Sceat (fetch@sceat.xyz)"]

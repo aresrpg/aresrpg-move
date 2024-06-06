@@ -107,17 +107,14 @@ module aresrpg::item_recipe {
   /// Consume a token ingredient
   public fun use_token_ingredient<T>(
     coin: Coin<T>,
-    craft: Craft,
-  ): Craft {
-    let mut craft = craft;
+    craft: &mut Craft,
+  ) {
     let ingredient = craft.ingredients.pop_back();
 
     assert!(type_name::get<T>().into_string() == ingredient.item_type.to_ascii(), EWrongIngredient);
     assert!(coin.value() == ingredient.amount, EWrongIngredient);
 
     craft.used_ingredients.add(ingredient.item_type, coin);
-
-    craft
   }
 
   // No need to check version since this is always a following of the start_craft
@@ -127,9 +124,9 @@ module aresrpg::item_recipe {
     kiosk_cap: &KioskOwnerCap,
     item_id: ID,
     protected_policy: &AresRPG_TransferPolicy<Item>,
-    craft: Craft,
+    craft: &mut Craft,
     ctx: &mut TxContext
-  ): Craft {
+  ) {
     let item = protected_policy.extract_from_kiosk(
       kiosk,
       kiosk_cap,
@@ -137,7 +134,6 @@ module aresrpg::item_recipe {
       ctx
     );
 
-    let mut craft = craft;
     let ingredient = craft.ingredients.pop_back();
 
     assert!(ingredient.item_type == item.item_type(), EWrongIngredient);
@@ -149,8 +145,6 @@ module aresrpg::item_recipe {
     );
 
     item.destroy();
-
-    craft
   }
 
   /// Retrieve a proof of craft completion to be used in the final step
