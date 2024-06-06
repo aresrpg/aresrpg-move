@@ -12,6 +12,7 @@ module aresrpg::item_recipe {
     random::{Random, new_generator},
     kiosk_extension,
     bag::{Self, Bag},
+    tx_context::sender
   };
 
   use aresrpg::{
@@ -155,7 +156,7 @@ module aresrpg::item_recipe {
   /// Retrieve a proof of craft completion to be used in the final step
   /// when all ingredients have been used.
   /// Consume the craft hot potato
-  public fun prove_all_ingredients_used(craft: Craft, ctx: &mut TxContext): FinishedCraft {
+  public fun prove_all_ingredients_used(craft: Craft, ctx: &mut TxContext) {
     let Craft {
       recipe_id,
       ingredients,
@@ -164,11 +165,11 @@ module aresrpg::item_recipe {
 
     assert!(ingredients.length() == 0, ERecipeIncomplete);
 
-    FinishedCraft {
+    transfer::transfer(FinishedCraft {
       id: object::new(ctx),
       recipe_id,
       used_ingredients
-    }
+    }, sender(ctx));
   }
 
   /// Craft the item from the finished craft proof
