@@ -12,7 +12,7 @@ console.log(' ')
 const [, cli_result] = execSync(
   `
   sui client switch --env ${NETWORK} && \
-  sui move build --dump-bytecode-as-base64 --path ./`,
+  sui move build ${NETWORK === 'mainnet' ? '' : '--dev'} --dump-bytecode-as-base64 --path ./`,
   {
     encoding: 'utf-8',
   }

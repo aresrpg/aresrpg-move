@@ -1,6 +1,7 @@
 import { Transaction } from '@mysten/sui/transactions'
 import { NETWORK, keypair, sdk } from './client.js'
 import { ITEM_CATEGORY } from '@aresrpg/aresrpg-sdk/items'
+import { USDC } from '@aresrpg/aresrpg-sdk/sui'
 
 const ADDRESS = keypair.getPublicKey().toSuiAddress()
 
@@ -19,9 +20,9 @@ sdk.admin_create_recipe({
   level: 1,
   ingredients: [
     {
-      name: 'AfSui',
-      item_type: '0x02264251ff808fbf55c06f60fd1174814fd787bd32dc539531894deb497029c7::afsui::AFSUI',
-      amount: 25,
+      name: 'usdc',
+      item_type: USDC,
+      amount: 15000000000n,
     },
     {
       name: 'Canine Skull',

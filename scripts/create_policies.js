@@ -2,8 +2,7 @@ import { Transaction } from '@mysten/sui/transactions'
 import { NETWORK, keypair, sdk } from './client.js'
 import { TransferPolicyTransaction, percentageToBasisPoints } from '@mysten/kiosk'
 
-const CHARACTER_ROYALTY = 10
-const ITEM_ROYALTY = 5
+const ROYALTY = 10
 const MIN_TRANSFER_FEE = 100_000_000 // (0.1 sui)
 const DEPLOYER = keypair.getPublicKey().toSuiAddress()
 const ARESRPG = '0x37cf46b499f740e653644bd2f7a8ed97f248e8b3c69d5d12c97d7845a54c0cd8'
@@ -36,7 +35,7 @@ await item_policy.create({
 
 character_policy
   .addLockRule()
-  .addRoyaltyRule(percentageToBasisPoints(CHARACTER_ROYALTY), MIN_TRANSFER_FEE)
+  .addRoyaltyRule(percentageToBasisPoints(ROYALTY), MIN_TRANSFER_FEE)
   .addPersonalKioskRule()
   .shareAndTransferCap(ARESRPG)
 
@@ -47,7 +46,7 @@ tx.moveCall({
 
 item_policy
   .addLockRule()
-  .addRoyaltyRule(percentageToBasisPoints(ITEM_ROYALTY), MIN_TRANSFER_FEE)
+  .addRoyaltyRule(percentageToBasisPoints(ROYALTY), MIN_TRANSFER_FEE)
   .addPersonalKioskRule()
   .shareAndTransferCap(ARESRPG)
 

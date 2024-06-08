@@ -1,8 +1,8 @@
 module aresrpg::item_recipe {
 
   use std::{
-    string::String,
-    type_name
+    string::{sub_string, String},
+    type_name,
   };
 
   use sui::{
@@ -11,7 +11,6 @@ module aresrpg::item_recipe {
     transfer_policy::TransferPolicy,
     random::{Random, new_generator},
     kiosk_extension,
-    bag::{Self, Bag},
     tx_context::sender
   };
 
@@ -26,6 +25,10 @@ module aresrpg::item_recipe {
     events,
   };
 
+  use kiosk::{
+    personal_kiosk::PersonalKioskCap
+  };
+
   // ╔════════════════ [ Constants ] ════════════════════════════════════════════ ]
 
   const EWrongRecipe: u64 = 101;
@@ -34,9 +37,6 @@ module aresrpg::item_recipe {
   const EWrongIngredient: u64 = 104;
 
   // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
-
-  /// this struct is used to store the ingredients used in a craft on an item
-  public struct IngredientsKey has copy, drop, store {}
 
   /// an ingredient contains the type of an item or a token, and can be used to craft
   public struct Ingredient has store, copy, drop {
@@ -72,9 +72,6 @@ module aresrpg::item_recipe {
   public struct Craft {
     recipe_id: ID,
     ingredients: vector<Ingredient>,
-    // this bag contains ingredients which are not aresrpg items,
-    // they can be tokens or any other objects
-    used_ingredients: Bag
   }
 
   // finished craft object which can be minted as an item with random stats
@@ -83,7 +80,6 @@ module aresrpg::item_recipe {
   public struct FinishedCraft has key {
     id: UID,
     recipe_id: ID,
-    used_ingredients: Bag
   }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
@@ -92,14 +88,12 @@ module aresrpg::item_recipe {
   public fun start_craft(
     recipe: &Recipe,
     version: &Version,
-    ctx: &mut TxContext
   ): Craft {
     version.assert_latest();
 
     Craft {
       recipe_id: recipe.id.uid_to_inner(),
       ingredients: recipe.ingredients,
-      used_ingredients: bag::new(ctx)
     }
   }
 
@@ -110,11 +104,12 @@ module aresrpg::item_recipe {
     craft: &mut Craft,
   ) {
     let ingredient = craft.ingredients.pop_back();
+    let parsed_type = sub_string(&ingredient.item_type, 2, ingredient.item_type.length());
 
-    assert!(type_name::get<T>().into_string() == ingredient.item_type.to_ascii(), EWrongIngredient);
+    assert!(type_name::get<T>().into_string() == parsed_type.to_ascii(), EWrongIngredient);
     assert!(coin.value() == ingredient.amount, EWrongIngredient);
 
-    craft.used_ingredients.add(ingredient.item_type, coin);
+    transfer::public_transfer(coin, @0x0);
   }
 
   // No need to check version since this is always a following of the start_craft
@@ -154,16 +149,18 @@ module aresrpg::item_recipe {
     let Craft {
       recipe_id,
       ingredients,
-      used_ingredients
     } = craft;
 
     assert!(ingredients.length() == 0, ERecipeIncomplete);
 
-    transfer::transfer(FinishedCraft {
+    let finished = FinishedCraft {
       id: object::new(ctx),
       recipe_id,
-      used_ingredients
-    }, sender(ctx));
+    };
+
+    events::emit_finished_craft_event(object::id(&finished), recipe_id);
+
+    transfer::transfer(finished, sender(ctx));
   }
 
   /// Craft the item from the finished craft proof
@@ -173,7 +170,7 @@ module aresrpg::item_recipe {
     craft: FinishedCraft,
     random: &Random,
     kiosk: &mut Kiosk,
-    kiosk_cap: &KioskOwnerCap,
+    personal_kiosk_cap: &mut PersonalKioskCap,
     policy: &TransferPolicy<Item>,
     version: &Version,
     ctx: &mut TxContext
@@ -183,7 +180,6 @@ module aresrpg::item_recipe {
     let FinishedCraft {
       id,
       recipe_id,
-      used_ingredients
     } = craft;
 
     id.delete();
@@ -203,9 +199,6 @@ module aresrpg::item_recipe {
       false,
       ctx
     );
-
-
-    crafted_item.add_field(IngredientsKey {}, used_ingredients);
 
     // all paths consume the same (@see https://docs.sui.io/guides/developer/advanced/randomness-onchain)
     let stats = item_stats::new(
@@ -267,6 +260,13 @@ module aresrpg::item_recipe {
     if(recipe.template.damages.length() > 0) {
       item_damages::augment_with_damages(&mut crafted_item, recipe.template.damages);
     };
+
+    events::emit_item_mint_event(
+      object::id(&crafted_item),
+      object::id(kiosk),
+    );
+
+    let kiosk_cap = personal_kiosk_cap.borrow_mut();
 
     kiosk.lock(kiosk_cap, policy, crafted_item);
   }
@@ -353,5 +353,81 @@ module aresrpg::item_recipe {
       stats_max,
       damages
     }
+  }
+
+  // ╔════════════════ [ Test ] ════════════════════════════════════════════ ]
+
+  #[test]
+  fun test_craft() {
+      use sui::test_scenario;
+      use sui::sui::SUI;
+      use sui::coin;
+
+      use std::string::utf8;
+
+      use aresrpg::admin;
+
+      let sceat = @0x5EA7;
+      let peasant = @0xCAFE;
+
+      let mut scenario = test_scenario::begin(sceat);
+      {
+        admin::test_promote_address(sceat, scenario.ctx());
+      };
+
+      scenario.next_tx(sceat);
+      {
+        let admin_cap = scenario.take_from_sender<AdminCap>();
+        let template = admin_create_template(
+          &admin_cap,
+          utf8(b"Excalibur"),
+          utf8(b"category_"),
+          utf8(b"none"),
+          utf8(b"type_"),
+          1,
+          item_stats::new(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 100, 0, 0, 0, 0),
+          item_stats::new(10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 100, 0, 0, 0, 0),
+          vector[],
+          scenario.ctx()
+        );
+
+        let ingredient_a = admin_create_ingredient(
+          &admin_cap,
+          utf8(b"0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"),
+          0,
+          utf8(b"SUI"),
+          scenario.ctx()
+        );
+
+        admin_create_recipe(
+          &admin_cap,
+          1,
+          vector[ingredient_a],
+          template,
+          scenario.ctx()
+        );
+
+        scenario.return_to_sender(admin_cap);
+      };
+
+      scenario.next_tx(peasant);
+      {
+          let recipe = scenario.take_shared<Recipe>();
+          let mut craft = Craft {
+            recipe_id: recipe.id.uid_to_inner(),
+            ingredients: recipe.ingredients,
+          };
+
+          use_token_ingredient<SUI>(
+            coin::zero<SUI>(scenario.ctx()),
+            &mut craft
+          );
+
+          prove_all_ingredients_used(craft, scenario.ctx());
+
+          test_scenario::return_shared(recipe);
+      };
+
+      scenario.end();
   }
 }

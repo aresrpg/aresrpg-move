@@ -86,6 +86,11 @@ module aresrpg::events {
     new_item_id: ID,
   }
 
+  public struct FinishedCraftEvent has copy, drop {
+    id: ID,
+    recipe_id: ID,
+  }
+
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   public(package) fun emit_item_equip_event(
@@ -237,6 +242,16 @@ module aresrpg::events {
       item_id,
       kiosk_id,
       new_item_id
+    });
+  }
+
+  public(package) fun emit_finished_craft_event(
+    id: ID,
+    recipe_id: ID
+  ) {
+    emit(FinishedCraftEvent {
+      id,
+      recipe_id
     });
   }
 }

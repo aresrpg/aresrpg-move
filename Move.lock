@@ -2,11 +2,20 @@
 
 [move]
 version = 2
-manifest_digest = "9621421FC94057CB03621C28FE3190B2621A3B82E35079E083B2EFD0052D07F4"
-deps_digest = "3C4103934B1E040BB6B23F1D610B4EF9F2F1166A50A104EADCF77467C004C600"
+manifest_digest = "3CADBC173E3897FA9C6D154A1C81A537118E3071F7606065FCF7A973C831B201"
+deps_digest = "060AD7E57DFB13104F21BE5F5C3759D03F0553FC3229247D9A7A6B45F50D03A3"
 dependencies = [
+  { name = "Kiosk" },
   { name = "Sui" },
   { name = "suifrens" },
+]
+
+[[move.package]]
+name = "Kiosk"
+source = { git = "https://github.com/MystenLabs/apps.git", rev = "testnet", subdir = "kiosk" }
+
+dependencies = [
+  { name = "Sui" },
 ]
 
 [[move.package]]

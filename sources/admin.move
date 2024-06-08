@@ -74,4 +74,19 @@ module aresrpg::admin {
   fun super_admin(self: &AdminCap): bool {
     self.epoch == 0
   }
+
+  // ╔════════════════ [ Test ] ═══════════════════════════════════════════════ ]
+
+  #[test_only]
+  public(package) fun test_promote_address(
+    recipient: address,
+    ctx: &mut TxContext,
+  ) {
+    let cap = AdminCap {
+      id: object::new(ctx),
+      epoch: ctx.epoch(),
+    };
+
+    transfer::transfer(cap, recipient);
+  }
 }
