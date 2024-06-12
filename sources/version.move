@@ -7,7 +7,7 @@ module aresrpg::version {
 
   // The version is used to make sure important functions
   // are not called on an outdated version of the package.
-  const PACKAGE_VERSION: u64 = 1;
+  const PACKAGE_VERSION: u64 = 3;
 
   // ╔════════════════ [ Constants ] ════════════════════════════════════════════ ]
 

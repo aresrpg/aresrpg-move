@@ -95,17 +95,18 @@ module aresrpg::item_manager {
 
     let item = kiosk.borrow_mut<Item>(kiosk_cap, item_id);
     let new_item = item.split(amount, ctx);
-    let item_id = object::id(&new_item);
+    let new_item_id = object::id(&new_item);
 
     events::emit_item_split_event(
       item_id,
       object::id(kiosk),
-      object::id(&new_item)
+      new_item_id,
+      amount,
     );
 
     kiosk.lock(kiosk_cap, policy, new_item);
 
-    item_id
+    new_item_id
   }
 
   public fun merge_items_single_kiosk(
@@ -126,14 +127,16 @@ module aresrpg::item_manager {
       ctx
     );
 
+    let kiosk_id = object::id(kiosk);
+    let target_item = kiosk.borrow_mut<Item>(kiosk_cap, target_item_id);
+
     events::emit_item_merge_event(
       target_item_id,
-      object::id(kiosk),
+      kiosk_id,
       item_id,
-      object::id(kiosk)
+      item.amount() + target_item.amount(),
+      kiosk_id
     );
-
-    let target_item = kiosk.borrow_mut<Item>(kiosk_cap, target_item_id);
 
     target_item.merge(item);
   }
@@ -157,15 +160,16 @@ module aresrpg::item_manager {
       item_id,
       ctx
     );
+    let target_kiosk_id = object::id(target_kiosk);
+    let target_item = target_kiosk.borrow_mut<Item>(target_kiosk_cap, target_item_id);
 
     events::emit_item_merge_event(
       target_item_id,
-      object::id(target_kiosk),
+      target_kiosk_id,
       item_id,
+      item.amount() + target_item.amount(),
       object::id(item_kiosk)
     );
-
-    let target_item = target_kiosk.borrow_mut<Item>(target_kiosk_cap, target_item_id);
 
     target_item.merge(item);
   }

@@ -22,7 +22,7 @@ sdk.admin_create_recipe({
     {
       name: 'usdc',
       item_type: USDC,
-      amount: 15000000000n,
+      amount: 1000000000n,
     },
     {
       name: 'Canine Skull',

@@ -90,7 +90,7 @@ const ITEMS = [
     item_category: ITEM_CATEGORY.RESOURCE,
     item_type: 'canine_skull',
     level: 1,
-    amount: 50,
+    amount: 450,
   },
 ]
 

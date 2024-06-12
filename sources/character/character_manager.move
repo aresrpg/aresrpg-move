@@ -28,7 +28,7 @@ module aresrpg::character_manager {
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EInventoryNotEmpty: u64 = 1;
+  const EInventoryNotEmpty: u64 = 101;
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 

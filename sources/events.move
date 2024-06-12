@@ -77,6 +77,7 @@ module aresrpg::events {
     target_item_id: ID,
     target_kiosk_id: ID,
     item_id: ID,
+    final_amount: u32,
     kiosk_id: ID,
   }
 
@@ -84,6 +85,7 @@ module aresrpg::events {
     item_id: ID,
     kiosk_id: ID,
     new_item_id: ID,
+    amount: u32,
   }
 
   public struct FinishedCraftEvent has copy, drop {
@@ -223,12 +225,14 @@ module aresrpg::events {
     target_item_id: ID,
     target_kiosk_id: ID,
     item_id: ID,
+    final_amount: u32,
     kiosk_id: ID
   ) {
     emit(ItemMergeEvent {
       target_item_id,
       target_kiosk_id,
       item_id,
+      final_amount,
       kiosk_id
     });
   }
@@ -236,12 +240,14 @@ module aresrpg::events {
   public(package) fun emit_item_split_event(
     item_id: ID,
     kiosk_id: ID,
-    new_item_id: ID
+    new_item_id: ID,
+    amount: u32,
   ) {
     emit(ItemSplitEvent {
       item_id,
       kiosk_id,
-      new_item_id
+      new_item_id,
+      amount
     });
   }
 
