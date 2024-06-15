@@ -11,7 +11,7 @@ txb.moveCall({
   arguments: [
     txb.object(sdk.DISPLAY_ITEM),
     txb.pure.string('image_url'),
-    txb.pure.string('http://assets.aresrpg.world/item/{item_type}.jpg'),
+    txb.pure.string('https://assets.aresrpg.world/item/{item_type}.png'),
   ],
 })
 
@@ -21,7 +21,7 @@ txb.moveCall({
   arguments: [
     txb.object(sdk.DISPLAY_CHARACTER),
     txb.pure.string('image_url'),
-    txb.pure.string('http://assets.aresrpg.world/classe/{classe}_{sex}.jpg'),
+    txb.pure.string('https://assets.aresrpg.world/classe/{classe}_{sex}.jpg'),
   ],
 })
 

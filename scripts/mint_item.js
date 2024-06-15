@@ -85,12 +85,19 @@ const ITEMS = [
   //     raw_damage: 3,
   //   },
   // },
+  // {
+  //   name: 'Canine Skull',
+  //   item_category: ITEM_CATEGORY.RESOURCE,
+  //   item_type: 'canine_skull',
+  //   level: 1,
+  //   amount: 450,
+  // },
   {
-    name: 'Canine Skull',
-    item_category: ITEM_CATEGORY.RESOURCE,
-    item_type: 'canine_skull',
+    name: 'Rune de Sui',
+    item_category: ITEM_CATEGORY.RUNE,
+    item_type: 'sui_rune',
     level: 1,
-    amount: 450,
+    amount: 200,
   },
 ]
 

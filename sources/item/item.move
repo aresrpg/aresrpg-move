@@ -74,7 +74,7 @@ module aresrpg::item {
     let values = vector[
         utf8(b"{name}"),
         utf8(b"https://app.aresrpg.world"),
-        utf8(b"http://assets.aresrpg.world/item/{item_type}.png"),
+        utf8(b"https://assets.aresrpg.world/item/{item_type}.png"),
         utf8(b"Item part of the AresRPG universe."),
         utf8(b"https://aresrpg.world"),
         utf8(b"AresRPG")

@@ -1,6 +1,7 @@
 import { keypair, NETWORK, sdk } from './client.js'
 import { Transaction, UpgradePolicy } from '@mysten/sui/transactions'
 import { execSync } from 'child_process'
+import { setTimeout } from 'timers/promises'
 
 const txb = new Transaction()
 
@@ -57,6 +58,8 @@ const package_id = result.effects?.created[0].reference.objectId
 console.log('package upgraded:', result.digest)
 console.log('package id:', package_id)
 console.log('==================== [ x ] ====================')
+
+await setTimeout(3000)
 
 console.log('==================== [ UPDATING VERSION ] ====================')
 

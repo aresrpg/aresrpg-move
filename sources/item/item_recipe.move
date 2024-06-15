@@ -103,11 +103,24 @@ module aresrpg::item_recipe {
     coin: Coin<T>,
     craft: &mut Craft,
   ) {
-    let ingredient = craft.ingredients.pop_back();
-    let parsed_type = sub_string(&ingredient.item_type, 2, ingredient.item_type.length());
+    let mut i = 0;
+    let mut used = false;
 
-    assert!(type_name::get<T>().into_string() == parsed_type.to_ascii(), EWrongIngredient);
-    assert!(coin.value() == ingredient.amount, EWrongIngredient);
+    while (i < craft.ingredients.length()) {
+      let ingredient = craft.ingredients[i];
+      let parsed_type = sub_string(&ingredient.item_type, 2, ingredient.item_type.length());
+
+      if(type_name::get<T>().into_string() == parsed_type.to_ascii()) {
+        assert!(coin.value() == ingredient.amount, EWrongIngredient);
+        craft.ingredients.remove(i);
+        used = true;
+        break
+      };
+
+      i = i + 1
+    };
+
+    assert!(used, EWrongIngredient);
 
     transfer::public_transfer(coin, @0x0);
   }
@@ -129,10 +142,23 @@ module aresrpg::item_recipe {
       ctx
     );
 
-    let ingredient = craft.ingredients.pop_back();
+    let mut i = 0;
+    let mut used = false;
 
-    assert!(ingredient.item_type == item.item_type(), EWrongIngredient);
-    assert!(ingredient.amount == item.amount() as u64, EWrongIngredient);
+    while (i < craft.ingredients.length()) {
+      let ingredient = craft.ingredients[i];
+
+      if(ingredient.item_type == item.item_type()) {
+        assert!(ingredient.amount == item.amount() as u64, EWrongIngredient);
+        used = true;
+        craft.ingredients.remove(i);
+        break
+      };
+
+      i = i + 1;
+    };
+
+    assert!(used, EWrongIngredient);
 
     events::emit_item_destroy_event(
       object::id(&item),
