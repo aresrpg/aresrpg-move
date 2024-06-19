@@ -226,10 +226,6 @@ module aresrpg::item_manager {
       object::id(kiosk)
     );
 
-    if(item.stackable()) {
-
-    };
-
     place_item_in_extension(kiosk, item, ctx);
   }
 }
