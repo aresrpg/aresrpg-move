@@ -92,12 +92,28 @@ const ITEMS = [
   //   level: 1,
   //   amount: 450,
   // },
+  // {
+  //   name: 'Rune de Sui',
+  //   item_category: ITEM_CATEGORY.RUNE,
+  //   item_type: 'sui_rune',
+  //   level: 1,
+  //   amount: 200,
+  // },
   {
-    name: 'Rune de Sui',
-    item_category: ITEM_CATEGORY.RUNE,
-    item_type: 'sui_rune',
+    name: 'Vaporeon #0001',
+    item_category: ITEM_CATEGORY.PET,
+    item_set: 'none',
+    item_type: 'vaporeon',
     level: 1,
-    amount: 200,
+    stackable: false,
+  },
+  {
+    name: 'Suicune #0001',
+    item_category: ITEM_CATEGORY.PET,
+    item_set: 'hsui',
+    item_type: 'suicune',
+    level: 1,
+    stackable: false,
   },
 ]
 
