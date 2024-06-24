@@ -32,6 +32,9 @@ module aresrpg::item_feed {
 
   const HSUI: vector<u8> = b"0x02a56d35041b2974ec23aff7889d8f7390b53b08e8d8bb91aa55207a0d5dd723::hsui::HSUI";
 
+  const SUIFREN_SUI_REQUIRED: u64 = 1;
+  const VAPOREON_HSUI_REQUIRED: u64 = 5;
+
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   public struct FeedableAbility<phantom T> has key, store {
@@ -89,8 +92,8 @@ module aresrpg::item_feed {
     feed_pet(
       uid_mut,
       food,
-      1_000_000_000,
-      1_000_000_000 * 100,
+      SUIFREN_SUI_REQUIRED * 1_000_000_000,
+      SUIFREN_SUI_REQUIRED * 1_000_000_000 * 100,
       ctx,
     );
   }
@@ -110,8 +113,8 @@ module aresrpg::item_feed {
     feed_pet(
       uid_mut,
       food,
-      1_000_000_000,
-      1_000_000_000 * 100,
+      VAPOREON_HSUI_REQUIRED * 1_000_000_000,
+      VAPOREON_HSUI_REQUIRED * 1_000_000_000 * 100,
       ctx,
     );
   }
