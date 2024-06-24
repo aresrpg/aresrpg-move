@@ -9,13 +9,13 @@ authors = ["Sceat (fetch@sceat.xyz)"]
 [dependencies.Sui]
 git = "https://github.com/MystenLabs/sui.git"
 subdir = "crates/sui-framework/packages/sui-framework"
-rev = "framework/mainnet"
+rev = "framework/testnet"
 override = true
 
 [dependencies.suifrens]
 git = "https://github.com/MystenLabs/apps.git"
 subdir = "suifrens/suifrens"
-rev = "main"
+rev = "testnet"
 
 [dependencies.vaporeon-nft]
 git = "https://github.com/Sceat/vaporeon-nft.git"
@@ -24,7 +24,7 @@ rev = "testnet"
 [dependencies.Kiosk]
 git = "https://github.com/MystenLabs/apps.git"
 subdir = "kiosk"
-rev = "main"
+rev = "testnet"
 
 [addresses]
 aresrpg = "0x0"
