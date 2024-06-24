@@ -30,7 +30,7 @@ module aresrpg::item_feed {
   const EInvalidFeedAmount: u64 = 102;
   const EMaxFeed: u64 = 103;
 
-  const HSUI: vector<u8> = b"0x02a56d35041b2974ec23aff7889d8f7390b53b08e8d8bb91aa55207a0d5dd723::hsui::HSUI";
+  const HSUI: vector<u8> = b"02a56d35041b2974ec23aff7889d8f7390b53b08e8d8bb91aa55207a0d5dd723::hsui::HSUI";
 
   const SUIFREN_SUI_REQUIRED: u64 = 1;
   const VAPOREON_HSUI_REQUIRED: u64 = 5;
