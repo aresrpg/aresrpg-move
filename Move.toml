@@ -2,7 +2,6 @@
 name = "aresrpg"
 version = "0.1.0"
 published-at = "0xa672b460efb2f462fbb952025d4b02be63efb8e0aee0fbf318eee5068a2c6424"
-# published-at = "0x7d9e4be6689138a66c60876e64ee4dc17c2ec5fd37814f9d7cc796de6c10fcde"
 edition = "2024.beta"
 
 authors = ["Sceat (fetch@sceat.xyz)"]
@@ -17,6 +16,10 @@ override = true
 git = "https://github.com/MystenLabs/apps.git"
 subdir = "suifrens/suifrens"
 rev = "main"
+
+[dependencies.vaporeon-nft]
+git = "https://github.com/Sceat/vaporeon-nft.git"
+rev = "testnet"
 
 [dependencies.Kiosk]
 git = "https://github.com/MystenLabs/apps.git"

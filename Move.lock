@@ -2,12 +2,13 @@
 
 [move]
 version = 2
-manifest_digest = "E8325BB1AEA6F7B750E825332E8920193F48A5B41FF39BD25991C09CF553A02B"
-deps_digest = "060AD7E57DFB13104F21BE5F5C3759D03F0553FC3229247D9A7A6B45F50D03A3"
+manifest_digest = "04F3ED10F32C5D0F7471769BFF8D44EA0D7F67FEDA778E11365207999C3D75FF"
+deps_digest = "F9B494B64F0615AED0E98FC12A85B85ECD2BC5185C22D30E7F67786BB52E507C"
 dependencies = [
   { name = "Kiosk" },
   { name = "Sui" },
   { name = "suifrens" },
+  { name = "vaporeon-nft" },
 ]
 
 [[move.package]]
@@ -33,6 +34,14 @@ dependencies = [
 [[move.package]]
 name = "suifrens"
 source = { git = "https://github.com/MystenLabs/apps.git", rev = "main", subdir = "suifrens/suifrens" }
+
+dependencies = [
+  { name = "Sui" },
+]
+
+[[move.package]]
+name = "vaporeon-nft"
+source = { git = "https://github.com/Sceat/vaporeon-nft.git", rev = "testnet", subdir = "" }
 
 dependencies = [
   { name = "Sui" },

@@ -4,6 +4,11 @@ module aresrpg::item_feed {
   // it allows to feed Sui to a suifren for example,
   // or runes on a sword to increase its power
 
+  use std::{
+    type_name,
+    string::utf8
+  };
+
   use sui::{
     balance::{Self, Balance},
     sui::SUI,
@@ -12,6 +17,7 @@ module aresrpg::item_feed {
   };
 
   use suifrens::suifrens::{SuiFren};
+  use vaporeon::vaporeon::{Vaporeon};
 
   use aresrpg::{
     version::Version,
@@ -24,11 +30,13 @@ module aresrpg::item_feed {
   const EInvalidFeedAmount: u64 = 102;
   const EMaxFeed: u64 = 103;
 
+  const HSUI: vector<u8> = b"0x02a56d35041b2974ec23aff7889d8f7390b53b08e8d8bb91aa55207a0d5dd723::hsui::HSUI";
+
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
-  public struct FeedableAbility has key, store {
+  public struct FeedableAbility<phantom T> has key, store {
     id: UID,
-    stomach: Balance<SUI>,
+    stomach: Balance<T>,
     last_feed: u64,
   }
 
@@ -36,27 +44,24 @@ module aresrpg::item_feed {
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
-  public fun feed_suifren<Fren>(
-    suifren: &mut SuiFren<Fren>,
-    food: Coin<SUI>,
-    version: &Version,
+  fun feed_pet<T>(
+    uid: &mut UID,
+    food: Coin<T>,
+    feed_amount: u64,
+    feed_max: u64,
     ctx: &mut TxContext,
   ) {
-    version.assert_latest();
+    events::emit_pet_feed_event(uid.to_inner());
 
-    events::emit_pet_feed_event(object::id(suifren));
-
-    let uid_mut = suifren.uid_mut();
-
-    if(!dof::exists_(uid_mut, FeedKey {})) {
-      dof::add(uid_mut, FeedKey {}, FeedableAbility {
+    if(!dof::exists_(uid, FeedKey {})) {
+      dof::add(uid, FeedKey {}, FeedableAbility<T> {
         id: object::new(ctx),
         stomach: balance::zero(),
         last_feed: 0,
       });
     };
 
-    let feedable = dof::borrow_mut<FeedKey, FeedableAbility>(uid_mut, FeedKey {});
+    let feedable = dof::borrow_mut<FeedKey, FeedableAbility<T>>(uid, FeedKey {});
 
     // can only feed once per epoch
     assert!(ctx.epoch() > feedable.last_feed, EAlreadyFed);
@@ -64,10 +69,50 @@ module aresrpg::item_feed {
     feedable.last_feed = ctx.epoch();
 
     // cost 1 sui to feed
-    assert!(food.value<SUI>() == 1_000_000_000, EInvalidFeedAmount);
+    assert!(food.value<T>() == feed_amount, EInvalidFeedAmount);
     // the suifren can only eat 100 sui
-    assert!(feedable.stomach.value() <= 1_000_000_000 * 100, EMaxFeed);
+    assert!(feedable.stomach.value() <= feed_max, EMaxFeed);
 
     coin::put(&mut feedable.stomach, food);
+  }
+
+  public fun feed_suifren<Fren>(
+    pet: &mut SuiFren<Fren>,
+    food: Coin<SUI>,
+    version: &Version,
+    ctx: &mut TxContext,
+  ) {
+    version.assert_latest();
+
+    let uid_mut = pet.uid_mut();
+
+    feed_pet(
+      uid_mut,
+      food,
+      1_000_000_000,
+      1_000_000_000 * 100,
+      ctx,
+    );
+  }
+
+  public fun feed_vaporeon<T>(
+    pet: &mut Vaporeon,
+    food: Coin<T>,
+    version: &Version,
+    ctx: &mut TxContext,
+  ) {
+    version.assert_latest();
+
+    assert!(type_name::get<T>().into_string() == utf8(HSUI).to_ascii());
+
+    let uid_mut = pet.uid();
+
+    feed_pet(
+      uid_mut,
+      food,
+      1_000_000_000,
+      1_000_000_000 * 100,
+      ctx,
+    );
   }
 }

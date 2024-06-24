@@ -99,22 +99,22 @@ const ITEMS = [
   //   level: 1,
   //   amount: 200,
   // },
-  {
-    name: 'Vaporeon #0001',
-    item_category: ITEM_CATEGORY.PET,
-    item_set: 'none',
-    item_type: 'vaporeon',
-    level: 1,
-    stackable: false,
-  },
-  {
-    name: 'Suicune #0001',
-    item_category: ITEM_CATEGORY.PET,
-    item_set: 'hsui',
-    item_type: 'suicune',
-    level: 1,
-    stackable: false,
-  },
+  // {
+  //   name: 'Vaporeon',
+  //   item_category: ITEM_CATEGORY.PET,
+  //   item_set: 'none',
+  //   item_type: 'vaporeon',
+  //   level: 1,
+  //   stackable: false,
+  // },
+  // {
+  //   name: 'Suicune #0001',
+  //   item_category: ITEM_CATEGORY.PET,
+  //   item_set: 'hsui',
+  //   item_type: 'suicune',
+  //   level: 1,
+  //   stackable: false,
+  // },
 ]
 
 ITEMS.forEach(item => {
