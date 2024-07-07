@@ -31,6 +31,7 @@ module aresrpg::character {
     name: String,
     classe: String,
     sex: String,
+    realm: String,
 
     position: String,
     experience: u32,
@@ -130,6 +131,16 @@ module aresrpg::character {
     self.experience = experience;
   }
 
+  public fun admin_set_realm(
+    self: &mut Character,
+    admin: &AdminCap,
+    realm: String,
+    ctx: &TxContext
+  ) {
+    admin.verify(ctx);
+    self.realm = realm;
+  }
+
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   /// Create a new character, and add it to the name registry
@@ -151,6 +162,7 @@ module aresrpg::character {
       id: object::new(ctx),
       name,
       position: utf8(b"{\"x\":0,\"y\":0,\"z\":0}"),
+      realm: utf8(b"overworld"),
       experience: 0,
       classe,
       sex,
@@ -169,6 +181,7 @@ module aresrpg::character {
       id,
       name,
       position: _,
+      realm: _,
       experience: _,
       classe: _,
       sex: _,

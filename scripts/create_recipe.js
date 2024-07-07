@@ -103,11 +103,11 @@ const RECIPES = {
 
 sdk.add_header(tx)
 
-// sdk.admin_create_recipe({
-//   tx,
-//   ...RECIPES.fud_hat,
-//   admin_cap: sdk.ADMIN_CAP,
-// })
+sdk.admin_create_recipe({
+  tx,
+  ...RECIPES.fud_hat,
+  admin_cap: sdk.ADMIN_CAP,
+})
 
 sdk.admin_create_recipe({
   tx,

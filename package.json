@@ -24,13 +24,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^20.14.5",
+    "@types/node": "^20.14.8",
     "dotenv": "^16.4.5"
   },
   "dependencies": {
-    "@aresrpg/aresrpg-sdk": "file:../aresrpg-sdk",
-    "@mysten/kiosk": "^0.9.8",
-    "@mysten/sui": "^1.1.2",
-    "bignumber.js": "^9.1.2"
+    "@aresrpg/aresrpg-sdk": "^4.1.1",
+    "@mysten/kiosk": "^0.9.9",
+    "@mysten/sui": "^1.2.0",
+    "bignumber.js": "^9.1.2",
+    "eslint": "^8.57.0",
+    "husky": "^4.3.8"
   }
 }
