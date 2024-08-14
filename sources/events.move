@@ -36,16 +36,15 @@ module aresrpg::events {
 
   public struct ItemDestroyEvent has copy, drop {
     item_id: ID,
-    kiosk_id: ID,
   }
 
   public struct CharacterCreateEvent has copy, drop {
-    character_id: ID
+    character_id: ID,
+    kiosk_id: ID
   }
 
   public struct CharacterSelectEvent has copy, drop {
     character_id: ID,
-    kiosk_id: ID
   }
 
   public struct CharacterUnselectEvent has copy, drop {
@@ -124,20 +123,20 @@ module aresrpg::events {
   }
 
   public(package) fun emit_character_create_event(
-    character_id: ID
+    character_id: ID,
+    kiosk_id: ID
   ) {
     emit(CharacterCreateEvent {
-      character_id
+      character_id,
+      kiosk_id,
     });
   }
 
   public(package) fun emit_character_select_event(
     character_id: ID,
-    kiosk_id: ID
   ) {
     emit(CharacterSelectEvent {
       character_id,
-      kiosk_id
     });
   }
 
@@ -189,11 +188,9 @@ module aresrpg::events {
 
   public(package) fun emit_item_destroy_event(
     item_id: ID,
-    kiosk_id: ID
   ) {
     emit(ItemDestroyEvent {
       item_id,
-      kiosk_id
     });
   }
 

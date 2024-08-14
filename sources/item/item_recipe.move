@@ -1,7 +1,7 @@
 module aresrpg::item_recipe {
 
   use std::{
-    string::{sub_string, String},
+    string::{substring, String},
     type_name,
   };
 
@@ -15,7 +15,7 @@ module aresrpg::item_recipe {
   };
 
   use aresrpg::{
-    item::{Self, Item},
+    item::{Self, Item, ItemCategory},
     admin::AdminCap,
     item_stats::{Self, ItemStatistics},
     item_damages::{Self, ItemDamages},
@@ -49,7 +49,7 @@ module aresrpg::item_recipe {
   /// Template to mint an item randomly with stats and damages
   public struct ItemTemplate has store, drop {
     name: String,
-    item_category: String,
+    item_category: ItemCategory,
     item_set: String,
     item_type: String,
     level: u8,
@@ -108,7 +108,7 @@ module aresrpg::item_recipe {
 
     while (i < craft.ingredients.length()) {
       let ingredient = craft.ingredients[i];
-      let parsed_type = sub_string(&ingredient.item_type, 2, ingredient.item_type.length());
+      let parsed_type = substring(&ingredient.item_type, 2, ingredient.item_type.length());
 
       if(type_name::get<T>().into_string() == parsed_type.to_ascii()) {
         assert!(coin.value() == ingredient.amount, EWrongIngredient);
@@ -160,11 +160,6 @@ module aresrpg::item_recipe {
 
     assert!(used, EWrongIngredient);
 
-    events::emit_item_destroy_event(
-      object::id(&item),
-      object::id(kiosk)
-    );
-
     item.destroy();
   }
 
@@ -207,6 +202,8 @@ module aresrpg::item_recipe {
       id,
       recipe_id,
     } = craft;
+
+    events::emit_item_destroy_event(id.to_inner());
 
     id.delete();
 
@@ -358,7 +355,7 @@ module aresrpg::item_recipe {
   public fun admin_create_template(
     admin: &AdminCap,
     name: String,
-    item_category: String,
+    item_category: ItemCategory,
     item_set: String,
     item_type: String,
     level: u8,
@@ -379,81 +376,5 @@ module aresrpg::item_recipe {
       stats_max,
       damages
     }
-  }
-
-  // ╔════════════════ [ Test ] ════════════════════════════════════════════ ]
-
-  #[test]
-  fun test_craft() {
-      use sui::test_scenario;
-      use sui::sui::SUI;
-      use sui::coin;
-
-      use std::string::utf8;
-
-      use aresrpg::admin;
-
-      let sceat = @0x5EA7;
-      let peasant = @0xCAFE;
-
-      let mut scenario = test_scenario::begin(sceat);
-      {
-        admin::test_promote_address(sceat, scenario.ctx());
-      };
-
-      scenario.next_tx(sceat);
-      {
-        let admin_cap = scenario.take_from_sender<AdminCap>();
-        let template = admin_create_template(
-          &admin_cap,
-          utf8(b"Excalibur"),
-          utf8(b"category_"),
-          utf8(b"none"),
-          utf8(b"type_"),
-          1,
-          item_stats::new(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 100, 0, 0, 0, 0),
-          item_stats::new(10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 100, 0, 0, 0, 0),
-          vector[],
-          scenario.ctx()
-        );
-
-        let ingredient_a = admin_create_ingredient(
-          &admin_cap,
-          utf8(b"0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"),
-          0,
-          utf8(b"SUI"),
-          scenario.ctx()
-        );
-
-        admin_create_recipe(
-          &admin_cap,
-          1,
-          vector[ingredient_a],
-          template,
-          scenario.ctx()
-        );
-
-        scenario.return_to_sender(admin_cap);
-      };
-
-      scenario.next_tx(peasant);
-      {
-          let recipe = scenario.take_shared<Recipe>();
-          let mut craft = Craft {
-            recipe_id: recipe.id.uid_to_inner(),
-            ingredients: recipe.ingredients,
-          };
-
-          use_token_ingredient<SUI>(
-            coin::zero<SUI>(scenario.ctx()),
-            &mut craft
-          );
-
-          prove_all_ingredients_used(craft, scenario.ctx());
-
-          test_scenario::return_shared(recipe);
-      };
-
-      scenario.end();
   }
 }

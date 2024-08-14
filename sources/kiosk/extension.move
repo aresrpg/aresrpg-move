@@ -137,8 +137,7 @@ module aresrpg::extension {
 
     let mut character = character;
 
-    character.set_selected(true);
-    character.set_kiosk_id(object::id(kiosk));
+    character.set_selected_in(object::id(kiosk).id_to_bytes().to_string());
 
     borrow_object_bag(kiosk, StorageKey<Character> {}, ctx)
       .add(object::id(&character), character);
@@ -156,8 +155,7 @@ module aresrpg::extension {
     let obag = borrow_object_bag(kiosk, StorageKey<Character> {}, ctx);
     let mut character = obag.remove<ID, Character>(character_id);
 
-    character.set_selected(false);
-    character.remove_kiosk_id();
+    character.set_selected_in(b"".to_string());
 
     character
   }
@@ -168,6 +166,9 @@ module aresrpg::extension {
     ctx: &mut TxContext,
   ) {
     assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
+
+    let mut item = item;
+    item.set_minted_in(object::id(kiosk).id_to_bytes().to_string());
 
     borrow_object_bag(kiosk, StorageKey<Item> {}, ctx)
       .add(object::id(&item), item);
@@ -183,7 +184,11 @@ module aresrpg::extension {
     assert!(kiosk.has_access(kiosk_cap), ENotOwner);
 
     let obag = borrow_object_bag(kiosk, StorageKey<Item> {}, ctx);
-    obag.remove<ID, Item>(item_id)
+    let mut item = obag.remove<ID, Item>(item_id);
+
+    item.set_minted_in(b"".to_string());
+
+    item
   }
 
   public(package) fun borrow_character_mut(

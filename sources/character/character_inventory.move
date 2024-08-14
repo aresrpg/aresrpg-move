@@ -15,14 +15,29 @@ module aresrpg::character_inventory {
     events
   };
 
-  // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
-
-  const EInvalidSLot: u64 = 101;
-
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   public struct SlotKey has copy, drop, store {
-    slot: String,
+    slot: Slot,
+  }
+
+  public enum Slot has store, copy, drop {
+    hat,
+    amulet,
+    cloack,
+    left_ring,
+    right_ring,
+    belt,
+    boots,
+    pet,
+    weapon,
+    relic_1,
+    relic_2,
+    relic_3,
+    relic_4,
+    relic_5,
+    relic_6,
+    title,
   }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
@@ -35,18 +50,16 @@ module aresrpg::character_inventory {
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
     character_id: ID,
-    slot: String,
+    slot: Slot,
     item: PurchaseCap<T>,
     version: &Version,
     ctx: &mut TxContext
   ) {
     version.assert_latest();
 
-    assert!(item_slot_valid(slot), EInvalidSLot);
-
     events::emit_item_equip_event(
       character_id,
-      slot,
+      slot.to_string(),
       object::id(kiosk),
       item.purchase_cap_item(),
     );
@@ -68,13 +81,11 @@ module aresrpg::character_inventory {
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
     character_id: ID,
-    slot: String,
+    slot: Slot,
     version: &Version,
     ctx: &mut TxContext
   ): PurchaseCap<T> {
     version.assert_latest();
-
-    assert!(item_slot_valid(slot), EInvalidSLot);
 
     let character = extension::borrow_character_mut(
       kiosk,
@@ -93,27 +104,6 @@ module aresrpg::character_inventory {
     );
 
     cap
-  }
-
-  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
-
-  fun item_slot_valid(slot: String): bool {
-    slot == b"hat".to_string() ||
-    slot == b"amulet".to_string() ||
-    slot == b"cloack".to_string() ||
-    slot == b"left_ring".to_string() ||
-    slot == b"right_ring".to_string() ||
-    slot == b"belt".to_string() ||
-    slot == b"boots".to_string() ||
-    slot == b"pet".to_string() ||
-    slot == b"weapon".to_string() ||
-    slot == b"relic_1".to_string() ||
-    slot == b"relic_2".to_string() ||
-    slot == b"relic_3".to_string() ||
-    slot == b"relic_4".to_string() ||
-    slot == b"relic_5".to_string() ||
-    slot == b"relic_6".to_string() ||
-    slot == b"title".to_string()
   }
 
 }

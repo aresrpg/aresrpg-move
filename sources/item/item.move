@@ -12,6 +12,8 @@ module aresrpg::item {
 
   use std::string::{utf8, String};
 
+  use aresrpg::events::emit_item_destroy_event;
+
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   const EWronItemType: u64 = 101;
@@ -20,34 +22,43 @@ module aresrpg::item {
 
   // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
+  public enum ItemCategory has store, copy, drop {
+    misc,
+    consumable,
+    relic,
+    rune,
+    mount,
+    hat,
+    cloack,
+    amulet,
+    ring,
+    belt,
+    boots,
+    bow,
+    wand,
+    staff,
+    dagger,
+    scythe,
+    axe,
+    hammer,
+    shovel,
+    sword,
+    fishingRod,
+    pickaxe,
+    title,
+  }
+
   public struct Item has key, store {
     id: UID,
     name: String,
-    /// todo: await enum support
-    /// misc, consumable, relic, rune, mount
-    /// hat,
-    /// cloack,
-    /// amulet,
-    /// ring,
-    /// belt,
-    /// boots,
-    /// bow,
-    /// wand,
-    /// staff,
-    /// dagger,
-    /// scythe,
-    /// axe,
-    /// hammer,
-    /// shovel,
-    /// sword,
-    /// fishing_rod,
-    /// pickaxe,
-    /// title,
-    item_category: String,
+    item_category: ItemCategory,
     item_set: String,
     /// unique type (ex: reset_orb)
     item_type: String,
     level: u8,
+
+    /// id of the kiosk in which this item is first minted, easing the retrieval of kiosk
+    minted_in: String,
 
     /// the amount of items in the stack
     /// this value can only be bigger than 1 if the item is stackable
@@ -107,7 +118,7 @@ module aresrpg::item {
 
   public(package) fun new(
     name: String,
-    item_category: String,
+    item_category: ItemCategory,
     item_set: String,
     item_type: String,
     level: u8,
@@ -129,21 +140,19 @@ module aresrpg::item {
       item_type,
       level,
       amount,
-      stackable
+      stackable,
+      minted_in: b"".to_string()
     }
   }
 
+  public(package) fun set_minted_in(self: &mut Item, kiosk_id: String) {
+    self.minted_in = kiosk_id;
+  }
+
   public(package) fun destroy(self: Item) {
-    let Item {
-      id,
-      name: _,
-      item_category: _,
-      item_set: _,
-      item_type: _,
-      level: _,
-      amount: _,
-      stackable: _
-    } = self;
+    let Item { id, .. } = self;
+
+    emit_item_destroy_event(id.to_inner());
 
     object::delete(id);
   }

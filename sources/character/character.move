@@ -8,7 +8,7 @@ module aresrpg::character {
     package,
     display,
     dynamic_field as dfield,
-    object_bag::{Self, ObjectBag}
+    object_bag::{Self, ObjectBag},
   };
 
   use std::string::{utf8, String};
@@ -37,8 +37,9 @@ module aresrpg::character {
     experience: u32,
     health: u16,
 
-    // Easier to know if a character is selected (locked in extension)
-    selected: bool,
+    // Easier to know in what kiosk the character is as moving it to the extension break
+    // the direct ownership link because of dynamic fields
+    selected_in: String,
 
     // Represent the energy left, it goes down on death
     soul: u8,
@@ -46,8 +47,6 @@ module aresrpg::character {
   }
 
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
-
-  public struct KioskIdKey has copy, drop, store {}
 
   // one time witness
   public struct CHARACTER has drop {}
@@ -167,7 +166,7 @@ module aresrpg::character {
       classe,
       sex,
       health: 30,
-      selected: false,
+      selected_in: b"".to_string(),
       soul: 100,
       inventory: object_bag::new(ctx)
     }
@@ -180,15 +179,8 @@ module aresrpg::character {
     let Character {
       id,
       name,
-      position: _,
-      realm: _,
-      experience: _,
-      classe: _,
-      sex: _,
-      health: _,
-      selected: _,
-      soul: _,
       inventory,
+      ..
     } = character;
     // prevent deletion of a character with items in inventory
     assert!(inventory.is_empty(), EInventoryNotEmpty);
@@ -225,18 +217,9 @@ module aresrpg::character {
     &mut self.inventory
   }
 
-  public(package) fun set_selected(self: &mut Character, selected: bool) {
-    self.selected = selected;
+  public(package) fun set_selected_in(self: &mut Character, kiosk_id: String) {
+    self.selected_in = kiosk_id;
   }
-
-  public(package) fun set_kiosk_id(self: &mut Character, kiosk_id: ID) {
-    dfield::add(&mut self.id, KioskIdKey {}, kiosk_id);
-  }
-
-  public(package) fun remove_kiosk_id(self: &mut Character) {
-    dfield::remove<KioskIdKey, ID>(&mut self.id, KioskIdKey {});
-  }
-
 
   // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
 
@@ -257,5 +240,4 @@ module aresrpg::character {
 
     vector::contains(&sexes, &sex)
   }
-
 }

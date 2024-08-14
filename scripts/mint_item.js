@@ -73,18 +73,18 @@ const ITEMS = [
   //   item_type: 'early_access_key',
   //   level: 1,
   // },
-  // {
-  //   name: 'Prime Machin #3101',
-  //   item_category: ITEM_CATEGORY.TITLE,
-  //   item_set: 'Mirai',
-  //   item_type: 'primemachin',
-  //   level: 10,
-  //   stats: {
-  //     strength: 40,
-  //     intelligence: 40,
-  //     raw_damage: 3,
-  //   },
-  // },
+  {
+    name: 'Prime Machin #3101',
+    item_category: ITEM_CATEGORY.TITLE,
+    item_set: 'Mirai',
+    item_type: 'primemachin',
+    level: 10,
+    stats: {
+      strength: 40,
+      intelligence: 40,
+      raw_damage: 3,
+    },
+  },
   // {
   //   name: 'Canine Skull',
   //   item_category: ITEM_CATEGORY.RESOURCE,

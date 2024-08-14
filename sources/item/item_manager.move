@@ -11,7 +11,7 @@ module aresrpg::item_manager {
   use std::string::{String};
 
   use aresrpg::{
-    item::{Self as a_item, Item},
+    item::{Self as a_item, Item, ItemCategory},
     admin::AdminCap,
     version::Version,
     extension::{
@@ -72,11 +72,6 @@ module aresrpg::item_manager {
       kiosk_cap,
       item_id,
       ctx
-    );
-
-    events::emit_item_destroy_event(
-      object::id(&item),
-      object::id(kiosk)
     );
 
     item.destroy();
@@ -183,7 +178,7 @@ module aresrpg::item_manager {
   public fun admin_mint(
     admin: &AdminCap,
     name: String,
-    item_category: String,
+    item_category: ItemCategory,
     item_set: String,
     item_type: String,
     level: u8,

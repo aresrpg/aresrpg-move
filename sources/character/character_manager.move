@@ -72,7 +72,7 @@ module aresrpg::character_manager {
       kiosk_extension::enable<AresRPG>(kiosk, kiosk_owner_cap);
     };
 
-    events::emit_character_create_event(character_id);
+    events::emit_character_create_event(character_id, object::id(kiosk));
 
     character_id
   }
@@ -101,7 +101,7 @@ module aresrpg::character_manager {
       ctx
     );
 
-    events::emit_character_select_event(character_id, object::id(kiosk));
+    events::emit_character_select_event(character_id);
   }
 
   /// Take the character from the extension and lock it back in the kiosk.
