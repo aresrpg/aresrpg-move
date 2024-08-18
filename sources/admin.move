@@ -1,6 +1,7 @@
 module aresrpg::admin {
 
   use sui::tx_context::{sender};
+  use aresrpg::events::emit_admin_cap_delete_event;
 
   // ╔════════════════ [ Constants ] ═══════════════════════════════════════════════ ]
 
@@ -52,8 +53,10 @@ module aresrpg::admin {
 
     let AdminCap {
       id,
-      epoch: _
+      ..
     } = self;
+
+    emit_admin_cap_delete_event(id.to_inner());
 
     object::delete(id);
   }

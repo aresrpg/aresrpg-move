@@ -38,6 +38,10 @@ module aresrpg::events {
     item_id: ID,
   }
 
+  public struct AdminCapDeleteEvent has copy, drop {
+    cap_id: ID,
+  }
+
   public struct CharacterCreateEvent has copy, drop {
     character_id: ID,
     kiosk_id: ID
@@ -191,6 +195,14 @@ module aresrpg::events {
   ) {
     emit(ItemDestroyEvent {
       item_id,
+    });
+  }
+
+  public(package) fun emit_admin_cap_delete_event(
+    cap_id: ID
+  ) {
+    emit(AdminCapDeleteEvent {
+      cap_id
     });
   }
 
