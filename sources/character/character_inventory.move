@@ -3,7 +3,9 @@ module aresrpg::character_inventory {
   // This module manages the inventory of a character
   // It allows to equip and unequip items.
 
-  use std::string::String;
+  use std::{
+    string::String,
+  };
 
   use sui::{
     kiosk::{PurchaseCap, Kiosk, KioskOwnerCap},
@@ -42,6 +44,27 @@ module aresrpg::character_inventory {
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
+  public fun slot_to_string(self: Slot): String {
+      match (self) {
+          Slot::hat => b"hat".to_string(),
+          Slot::amulet => b"amulet".to_string(),
+          Slot::cloack => b"cloack".to_string(),
+          Slot::left_ring => b"left_ring".to_string(),
+          Slot::right_ring => b"right_ring".to_string(),
+          Slot::belt => b"belt".to_string(),
+          Slot::boots => b"boots".to_string(),
+          Slot::pet => b"pet".to_string(),
+          Slot::weapon => b"weapon".to_string(),
+          Slot::relic_1 => b"relic_1".to_string(),
+          Slot::relic_2 => b"relic_2".to_string(),
+          Slot::relic_3 => b"relic_3".to_string(),
+          Slot::relic_4 => b"relic_4".to_string(),
+          Slot::relic_5 => b"relic_5".to_string(),
+          Slot::relic_6 => b"relic_6".to_string(),
+          Slot::title => b"title".to_string(),
+      }
+  }
+
   /// Equip an item onto a character, users must select the character first.
   /// Only a purchasecap of the item can be equipped to avoid creating a protected policy.
   /// The purchasecap ensure the NFT stays in the kiosk and is not mutated or transfered
@@ -59,7 +82,7 @@ module aresrpg::character_inventory {
 
     events::emit_item_equip_event(
       character_id,
-      slot.to_string(),
+      slot.slot_to_string(),
       object::id(kiosk),
       item.purchase_cap_item(),
     );
@@ -98,7 +121,7 @@ module aresrpg::character_inventory {
 
     events::emit_item_unequip_event(
       character_id,
-      slot,
+      slot.slot_to_string(),
       object::id(kiosk),
       cap.purchase_cap_item(),
     );
