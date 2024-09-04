@@ -12,7 +12,7 @@ module aresrpg::character_manager {
   use std::string::String;
 
   use aresrpg::{
-    character::{Self as a_character, Character},
+    character::{Self as a_character, Character, Classe, Gender},
     character_stats,
     character_registry::{NameRegistry},
     extension::{
@@ -40,8 +40,8 @@ module aresrpg::character_manager {
     name_registry: &mut NameRegistry,
     policy: &TransferPolicy<Character>,
     raw_name: String,
-    classe: String,
-    sex: String,
+    classe: Classe,
+    sex: Gender,
     version: &Version,
     ctx: &mut TxContext,
   ): ID {

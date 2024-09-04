@@ -21,16 +21,15 @@ module aresrpg::character {
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EInvalidClasse: u64 = 2;
-  const EInvalidSex: u64 = 3;
+  const EClassNotAvailable: u64 = 101;
   const EInventoryNotEmpty: u64 = 4;
   const EExperienceTooLow: u64 = 5;
 
   public struct Character has key, store {
     id: UID,
     name: String,
-    classe: String,
-    sex: String,
+    classe: Classe,
+    sex: Gender,
     realm: String,
 
     position: String,
@@ -77,6 +76,26 @@ module aresrpg::character {
 
     transfer::public_transfer(publisher, sender(ctx));
     transfer::public_transfer(display, sender(ctx));
+  }
+
+  public enum Classe has store, copy, drop {
+    shugo, // Feca
+    tomoda, // Osamodas
+    rojin, // Enutrof
+    yajin, // Sram
+    tokei, // Xelor
+    asobi, // Ecaflip
+    tsuba, // Eniripsa
+    senshi, // Iop
+    yogan, // Cra
+    mori, // Sadida
+    ikari, // Sacrier
+    shusen, // Pandawa
+  }
+
+  public enum Gender has store, copy, drop { // Deus vult, there is 2 genders
+    male,
+    female,
   }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
@@ -146,12 +165,11 @@ module aresrpg::character {
   public(package) fun new(
     name_registry: &mut NameRegistry,
     raw_name: String,
-    classe: String,
-    sex: String,
+    classe: Classe,
+    sex: Gender,
     ctx: &mut TxContext
   ): Character {
-    assert!(valid_classe(classe), EInvalidClasse);
-    assert!(valid_sex(sex), EInvalidSex);
+    assert!(classe == Classe::senshi || classe == Classe::yajin, EClassNotAvailable);
 
     let name = to_lower_case(raw_name);
 
@@ -219,25 +237,5 @@ module aresrpg::character {
 
   public(package) fun set_selected_in(self: &mut Character, kiosk_id: String) {
     self.selected_in = kiosk_id;
-  }
-
-  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
-
-  fun valid_classe(classe: String): bool {
-    let classes = vector[
-      utf8(b"sram"),
-      utf8(b"iop"),
-    ];
-
-    vector::contains(&classes, &classe)
-  }
-
-  fun valid_sex(sex: String): bool {
-    let sexes = vector[
-      utf8(b"male"),
-      utf8(b"female"),
-    ];
-
-    vector::contains(&sexes, &sex)
   }
 }
