@@ -1,6 +1,8 @@
 import { Transaction } from '@mysten/sui/transactions'
 import { NETWORK, keypair, sdk } from './client.js'
 import { TransferPolicyTransaction, percentageToBasisPoints } from '@mysten/kiosk'
+import { find_types } from '../../aresrpg-sdk/src/types-parser.js'
+import { writeFileSync } from 'fs'
 
 const ROYALTY = 10
 const MIN_TRANSFER_FEE = 100_000_000 // (0.1 sui)
@@ -69,6 +71,20 @@ const result = await sdk.sui_client.signAndExecuteTransaction({
   options: { showEffects: true },
 })
 
+await sdk.sui_client.waitForTransaction({ digest: result.digest })
+
 console.log('policies created:', result.digest)
+
+const types = await find_types(
+  {
+    digest: result.digest,
+    package_id: sdk.PACKAGE_ID,
+  },
+  sdk.sui_client
+)
+
+console.dir(types, { depth: Infinity })
+
+writeFileSync('./types-policies.json', JSON.stringify(types))
 
 console.log('==================== [ x ] ====================')

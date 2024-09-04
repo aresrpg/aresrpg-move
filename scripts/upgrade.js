@@ -2,6 +2,8 @@ import { keypair, NETWORK, sdk } from './client.js'
 import { Transaction, UpgradePolicy } from '@mysten/sui/transactions'
 import { execSync } from 'child_process'
 import { setTimeout } from 'timers/promises'
+import { find_types } from '../../aresrpg-sdk/src/types-parser.js'
+import { writeFileSync } from 'fs'
 
 const txb = new Transaction()
 
@@ -26,7 +28,7 @@ const ticket = txb.moveCall({
   arguments: [
     txb.object(sdk.UPGRADE_CAP),
     txb.pure.u8(UpgradePolicy.COMPATIBLE),
-    txb.pure(build_digest),
+    txb.pure.vector('u8', build_digest),
   ],
 })
 
@@ -78,6 +80,8 @@ const migrate_result = await sdk.sui_client.signAndExecuteTransaction({
   },
 })
 
+await sdk.sui_client.waitForTransaction({ digest: migrate_result.digest })
+
 if (migrate_result.effects?.status.error) {
   console.error(migrate_result.effects.status.error)
   console.dir(migrate_result, { depth: Infinity })
@@ -86,5 +90,18 @@ if (migrate_result.effects?.status.error) {
 
 console.log('version updated! 🎉')
 console.log('digest:', migrate_result.digest)
+
+const types = await find_types(
+  {
+    digest: result.digest,
+    package_id: sdk.PACKAGE_ID,
+  },
+  sdk.sui_client
+)
+
+console.log('package published:', result.digest)
+console.dir(types, { depth: Infinity })
+
+writeFileSync('./types-upgrade.json', JSON.stringify(types))
 
 console.log('==================== [ x ] ====================')

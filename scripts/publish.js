@@ -1,7 +1,9 @@
-import { sdk, keypair, NETWORK } from './client.js'
+import { keypair, NETWORK, sdk } from './client.js'
 import { Transaction } from '@mysten/sui/transactions'
 import { execSync } from 'child_process'
 import { find_types } from '../../aresrpg-sdk/src/types-parser.js'
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client'
+import { writeFileSync } from 'fs'
 
 const txb = new Transaction()
 
@@ -40,15 +42,13 @@ const result = await sdk.sui_client.signAndExecuteTransaction({
 
 if (!result.digest) throw new Error('Failed to publish package.')
 
-const types = await find_types(
-  {
-    publish_digest: result.digest,
-    policies_digest: '',
-    upgrade_digest: '',
-  },
-  sdk.sui_client
-)
+await sdk.sui_client.waitForTransaction({ digest: result.digest })
+
+const types = await find_types(result, sdk.sui_client)
 
 console.log('package published:', result.digest)
-console.log('package_id', types.PACKAGE_ID)
+console.dir(types, { depth: Infinity })
+
+writeFileSync('./types.json', JSON.stringify(types))
+
 console.log('==================== [ x ] ====================')
