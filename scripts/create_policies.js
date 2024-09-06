@@ -43,6 +43,7 @@ character_policy
 
 tx.moveCall({
   target: `${sdk.LATEST_PACKAGE_ID}::amount_rule::add`,
+  // @ts-ignore
   arguments: [item_policy.getPolicy(), item_policy.getPolicyCap()],
 })
 

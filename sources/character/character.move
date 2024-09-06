@@ -21,15 +21,14 @@ module aresrpg::character {
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EClassNotAvailable: u64 = 101;
   const EInventoryNotEmpty: u64 = 4;
   const EExperienceTooLow: u64 = 5;
 
   public struct Character has key, store {
     id: UID,
     name: String,
-    classe: Classe,
-    sex: Gender,
+    classe: String,
+    sex: String,
     realm: String,
 
     position: String,
@@ -76,26 +75,6 @@ module aresrpg::character {
 
     transfer::public_transfer(publisher, sender(ctx));
     transfer::public_transfer(display, sender(ctx));
-  }
-
-  public enum Classe has store, copy, drop {
-    shugo, // Feca
-    tomoda, // Osamodas
-    rojin, // Enutrof
-    yajin, // Sram
-    tokei, // Xelor
-    asobi, // Ecaflip
-    tsuba, // Eniripsa
-    senshi, // Iop
-    yogan, // Cra
-    mori, // Sadida
-    ikari, // Sacrier
-    shusen, // Pandawa
-  }
-
-  public enum Gender has store, copy, drop { // Deus vult, there is 2 genders
-    male,
-    female,
   }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
@@ -165,11 +144,12 @@ module aresrpg::character {
   public(package) fun new(
     name_registry: &mut NameRegistry,
     raw_name: String,
-    classe: Classe,
-    sex: Gender,
+    classe: String,
+    sex: String,
     ctx: &mut TxContext
   ): Character {
-    assert!(classe == Classe::senshi || classe == Classe::yajin, EClassNotAvailable);
+    verify_gender(sex);
+    verify_classe(classe);
 
     let name = to_lower_case(raw_name);
 
@@ -237,5 +217,32 @@ module aresrpg::character {
 
   public(package) fun set_selected_in(self: &mut Character, kiosk_id: String) {
     self.selected_in = kiosk_id;
+  }
+
+  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
+
+  /// Whoever tries to add more fields here will be punished by the gods
+  fun verify_gender(gender: String) {
+    assert!(
+      gender == b"male".to_string() ||
+      gender == b"female".to_string(),
+    );
+  }
+
+  fun verify_classe(classe: String) {
+    assert!(
+      classe == b"shugo".to_string() ||
+      classe == b"tomoda".to_string() ||
+      classe == b"rojin".to_string() ||
+      classe == b"yajin".to_string() ||
+      classe == b"tokei".to_string() ||
+      classe == b"asobi".to_string() ||
+      classe == b"tsuba".to_string() ||
+      classe == b"senshi".to_string() ||
+      classe == b"yogan".to_string() ||
+      classe == b"mori".to_string() ||
+      classe == b"ikari".to_string() ||
+      classe == b"shusen".to_string(),
+    );
   }
 }

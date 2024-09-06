@@ -20,50 +20,10 @@ module aresrpg::character_inventory {
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   public struct SlotKey has copy, drop, store {
-    slot: Slot,
-  }
-
-  public enum Slot has store, copy, drop {
-    hat,
-    amulet,
-    cloack,
-    left_ring,
-    right_ring,
-    belt,
-    boots,
-    pet,
-    weapon,
-    relic_1,
-    relic_2,
-    relic_3,
-    relic_4,
-    relic_5,
-    relic_6,
-    title,
+    slot: String,
   }
 
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
-
-  public fun slot_to_string(self: Slot): String {
-      match (self) {
-          Slot::hat => b"hat".to_string(),
-          Slot::amulet => b"amulet".to_string(),
-          Slot::cloack => b"cloack".to_string(),
-          Slot::left_ring => b"left_ring".to_string(),
-          Slot::right_ring => b"right_ring".to_string(),
-          Slot::belt => b"belt".to_string(),
-          Slot::boots => b"boots".to_string(),
-          Slot::pet => b"pet".to_string(),
-          Slot::weapon => b"weapon".to_string(),
-          Slot::relic_1 => b"relic_1".to_string(),
-          Slot::relic_2 => b"relic_2".to_string(),
-          Slot::relic_3 => b"relic_3".to_string(),
-          Slot::relic_4 => b"relic_4".to_string(),
-          Slot::relic_5 => b"relic_5".to_string(),
-          Slot::relic_6 => b"relic_6".to_string(),
-          Slot::title => b"title".to_string(),
-      }
-  }
 
   /// Equip an item onto a character, users must select the character first.
   /// Only a purchasecap of the item can be equipped to avoid creating a protected policy.
@@ -73,16 +33,17 @@ module aresrpg::character_inventory {
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
     character_id: ID,
-    slot: Slot,
+    slot: String,
     item: PurchaseCap<T>,
     version: &Version,
     ctx: &mut TxContext
   ) {
     version.assert_latest();
+    verify_slot(slot);
 
     events::emit_item_equip_event(
       character_id,
-      slot.slot_to_string(),
+      slot,
       object::id(kiosk),
       item.purchase_cap_item(),
     );
@@ -104,11 +65,12 @@ module aresrpg::character_inventory {
     kiosk: &mut Kiosk,
     kiosk_cap: &KioskOwnerCap,
     character_id: ID,
-    slot: Slot,
+    slot: String,
     version: &Version,
     ctx: &mut TxContext
   ): PurchaseCap<T> {
     version.assert_latest();
+    verify_slot(slot);
 
     let character = extension::borrow_character_mut(
       kiosk,
@@ -121,7 +83,7 @@ module aresrpg::character_inventory {
 
     events::emit_item_unequip_event(
       character_id,
-      slot.slot_to_string(),
+      slot,
       object::id(kiosk),
       cap.purchase_cap_item(),
     );
@@ -129,4 +91,26 @@ module aresrpg::character_inventory {
     cap
   }
 
+  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
+
+  fun verify_slot(slot: String) {
+    assert!(
+      slot == b"hat".to_string() ||
+      slot == b"amulet".to_string() ||
+      slot == b"cloack".to_string() ||
+      slot == b"left_ring".to_string() ||
+      slot == b"right_ring".to_string() ||
+      slot == b"belt".to_string() ||
+      slot == b"boots".to_string() ||
+      slot == b"pet".to_string() ||
+      slot == b"weapon".to_string() ||
+      slot == b"relic_1".to_string() ||
+      slot == b"relic_2".to_string() ||
+      slot == b"relic_3".to_string() ||
+      slot == b"relic_4".to_string() ||
+      slot == b"relic_5".to_string() ||
+      slot == b"relic_6".to_string() ||
+      slot == b"title".to_string(),
+    );
+  }
 }
