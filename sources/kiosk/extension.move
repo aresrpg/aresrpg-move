@@ -25,9 +25,9 @@ module aresrpg::extension {
   /// AresRPG can place and lock items in the Kiosk
   const KIOSK_EXTENSION_PERMISSIONS: u128 = 11;
 
-  const EWrongPromise : u64 = 1;
-  const EExtensionNotInstalled: u64 = 2;
-  const ENotOwner: u64 = 3;
+  const EWrongPromise : u64 = 101;
+  const EExtensionNotInstalled: u64 = 102;
+  const ENotOwner: u64 = 103;
 
   // ╔════════════════ [ Types ] ══════════════════════════════════════════════ ]
 
@@ -137,7 +137,7 @@ module aresrpg::extension {
 
     let mut character = character;
 
-    character.set_selected_in(object::id(kiosk).id_to_bytes().to_string());
+    character.set_selected_in(object::id(kiosk).to_address().to_string());
 
     borrow_object_bag(kiosk, StorageKey<Character> {}, ctx)
       .add(object::id(&character), character);

@@ -96,6 +96,10 @@ module aresrpg::events {
     recipe_id: ID,
   }
 
+  public struct StatsResetEvent has copy, drop {
+    character_id: ID,
+  }
+
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   public(package) fun emit_item_equip_event(
@@ -267,6 +271,14 @@ module aresrpg::events {
     emit(FinishedCraftEvent {
       id,
       recipe_id
+    });
+  }
+
+  public(package) fun emit_stats_reset_event(
+    character_id: ID
+  ) {
+    emit(StatsResetEvent {
+      character_id
     });
   }
 }

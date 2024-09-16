@@ -17,6 +17,10 @@ module aresrpg::character_inventory {
     events
   };
 
+  // ╔════════════════ [ Constant ] ═════════════════════════════════════════ ]
+
+  const EInvalidSlot: u64 = 101;
+
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   public struct SlotKey has copy, drop, store {
@@ -111,6 +115,7 @@ module aresrpg::character_inventory {
       slot == b"relic_5".to_string() ||
       slot == b"relic_6".to_string() ||
       slot == b"title".to_string(),
+      EInvalidSlot
     );
   }
 }

@@ -41,7 +41,7 @@ module aresrpg::character_manager {
     policy: &TransferPolicy<Character>,
     raw_name: String,
     classe: String,
-    sex: String,
+    male: bool,
     version: &Version,
     ctx: &mut TxContext,
   ): ID {
@@ -51,7 +51,7 @@ module aresrpg::character_manager {
       name_registry,
       raw_name,
       classe,
-      sex,
+      male,
       ctx,
     );
 

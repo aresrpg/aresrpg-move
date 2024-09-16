@@ -29,6 +29,7 @@ module aresrpg::item_feed {
   const EAlreadyFed: u64 = 101;
   const EInvalidFeedAmount: u64 = 102;
   const EMaxFeed: u64 = 103;
+  const EInvalidType: u64 = 104;
 
   const HSUI: vector<u8> = b"02a56d35041b2974ec23aff7889d8f7390b53b08e8d8bb91aa55207a0d5dd723::hsui::HSUI";
 
@@ -106,7 +107,7 @@ module aresrpg::item_feed {
   ) {
     version.assert_latest();
 
-    assert!(type_name::get<T>().into_string() == utf8(HSUI).to_ascii());
+    assert!(type_name::get<T>().into_string() == utf8(HSUI).to_ascii(), EInvalidType);
 
     let uid_mut = pet.uid();
 

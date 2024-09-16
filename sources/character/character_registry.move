@@ -18,8 +18,8 @@ module aresrpg::character_registry {
 
   // ╔════════════════ [ Constants ] ════════════════════════════════════════════ ]
 
-  const ENameInvalid: u64 = 2;
-  const ENameTaken: u64 = 3;
+  const ENameInvalid: u64 = 101;
+  const ENameTaken: u64 = 102;
 
   // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 

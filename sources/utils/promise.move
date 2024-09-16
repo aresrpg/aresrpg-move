@@ -8,7 +8,7 @@ module aresrpg::promise {
 
   // ╔════════════════ [ Constants ] ═
 
-  const EWrongValue: u64 = 1;
+  const EWrongValue: u64 = 101;
 
   // ╔════════════════ [ Package ] ═
 

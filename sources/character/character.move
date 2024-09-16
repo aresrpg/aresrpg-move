@@ -15,14 +15,16 @@ module aresrpg::character {
 
   use aresrpg::{
     character_registry::{NameRegistry},
-    string::{to_lower_case},
     admin::{AdminCap},
   };
 
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  const EInventoryNotEmpty: u64 = 4;
-  const EExperienceTooLow: u64 = 5;
+  const EInventoryNotEmpty: u64 = 101;
+  const EExperienceTooLow: u64 = 102;
+  const EInvalidClasse: u64 = 103;
+
+  // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   public struct Character has key, store {
     id: UID,
@@ -44,7 +46,6 @@ module aresrpg::character {
     inventory: ObjectBag,
   }
 
-  // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
   // one time witness
   public struct CHARACTER has drop {}
@@ -145,21 +146,21 @@ module aresrpg::character {
     name_registry: &mut NameRegistry,
     raw_name: String,
     classe: String,
-    sex: String,
+    male: bool,
     ctx: &mut TxContext
   ): Character {
-    verify_gender(sex);
     verify_classe(classe);
 
-    let name = to_lower_case(raw_name);
+    let name = raw_name.to_ascii().to_lowercase().to_string();
+    let sex = if(male) b"male".to_string() else b"female".to_string();
 
     name_registry.add_name(name, ctx);
 
     Character {
       id: object::new(ctx),
       name,
-      position: utf8(b"{\"x\":0,\"y\":0,\"z\":0}"),
-      realm: utf8(b"overworld"),
+      position: b"{\"x\":0,\"y\":0,\"z\":0}".to_string(),
+      realm: b"overworld".to_string(),
       experience: 0,
       classe,
       sex,
@@ -221,14 +222,6 @@ module aresrpg::character {
 
   // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
 
-  /// Whoever tries to add more fields here will be punished by the gods
-  fun verify_gender(gender: String) {
-    assert!(
-      gender == b"male".to_string() ||
-      gender == b"female".to_string(),
-    );
-  }
-
   fun verify_classe(classe: String) {
     assert!(
       classe == b"shugo".to_string() ||
@@ -243,6 +236,7 @@ module aresrpg::character {
       classe == b"mori".to_string() ||
       classe == b"ikari".to_string() ||
       classe == b"shusen".to_string(),
+      EInvalidClasse
     );
   }
 }

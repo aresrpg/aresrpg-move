@@ -24,7 +24,7 @@ module aresrpg::item_damages {
   // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
   /// The item is stackable, you can't add damages to it
-  const EItemStackable: u64 = 1;
+  const EItemStackable: u64 = 101;
 
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
