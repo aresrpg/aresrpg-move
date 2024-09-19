@@ -42,6 +42,9 @@ module aresrpg::character_manager {
     raw_name: String,
     classe: String,
     male: bool,
+    color_1: u32,
+    color_2: u32,
+    color_3: u32,
     version: &Version,
     ctx: &mut TxContext,
   ): ID {
@@ -52,6 +55,9 @@ module aresrpg::character_manager {
       raw_name,
       classe,
       male,
+      color_1,
+      color_2,
+      color_3,
       ctx,
     );
 

@@ -23,6 +23,10 @@ module aresrpg::character {
   const EInventoryNotEmpty: u64 = 101;
   const EExperienceTooLow: u64 = 102;
   const EInvalidClasse: u64 = 103;
+  const EInvalidColor: u64 = 104;
+
+  const MIN_COLOR_VALUE: u32 = 0;
+  const MAX_COLOR_VALUE: u32 = 16777215; // Equivalent to 0xFFFFFF
 
   // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
 
@@ -44,6 +48,10 @@ module aresrpg::character {
     // Represent the energy left, it goes down on death
     soul: u8,
     inventory: ObjectBag,
+
+    color_1: u32,
+    color_2: u32,
+    color_3: u32,
   }
 
 
@@ -147,9 +155,14 @@ module aresrpg::character {
     raw_name: String,
     classe: String,
     male: bool,
+    color_1: u32,
+    color_2: u32,
+    color_3: u32,
     ctx: &mut TxContext
   ): Character {
     verify_classe(classe);
+
+    assert!(color_1 >= MIN_COLOR_VALUE && color_1 <= MAX_COLOR_VALUE, EInvalidColor);
 
     let name = raw_name.to_ascii().to_lowercase().to_string();
     let sex = if(male) b"male".to_string() else b"female".to_string();
@@ -167,7 +180,10 @@ module aresrpg::character {
       health: 30,
       selected_in: b"".to_string(),
       soul: 100,
-      inventory: object_bag::new(ctx)
+      inventory: object_bag::new(ctx),
+      color_1,
+      color_2,
+      color_3,
     }
   }
 
