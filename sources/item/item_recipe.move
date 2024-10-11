@@ -15,7 +15,7 @@ module aresrpg::item_recipe {
   };
 
   use aresrpg::{
-    item::{Self, Item, ItemCategory},
+    item::{Self, Item},
     admin::AdminCap,
     item_stats::{Self, ItemStatistics},
     item_damages::{Self, ItemDamages},
@@ -49,7 +49,7 @@ module aresrpg::item_recipe {
   /// Template to mint an item randomly with stats and damages
   public struct ItemTemplate has store, drop {
     name: String,
-    item_category: ItemCategory,
+    item_category: String,
     item_set: String,
     item_type: String,
     level: u8,
@@ -210,79 +210,12 @@ module aresrpg::item_recipe {
     assert!(recipe_id == recipe.id.uid_as_inner(), EWrongRecipe);
     assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
 
-    let mut generator = new_generator(random, ctx);
-
-    let mut crafted_item = item::new(
-      recipe.template.name,
-      recipe.template.item_category,
-      recipe.template.item_set,
-      recipe.template.item_type,
-      recipe.template.level,
-      1,
-      false,
+    let crafted_item = item_from_template(
+      &recipe.template,
+      1, // we craft one by one, why do you want to craft faster anyway? it's not like you have anything else to do
+      random,
       ctx
     );
-
-    // all paths consume the same (@see https://docs.sui.io/guides/developer/advanced/randomness-onchain)
-    let stats = item_stats::new(
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.vitality(),
-        recipe.template.stats_max.vitality()),
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.wisdom(),
-        recipe.template.stats_max.wisdom()),
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.strength(),
-        recipe.template.stats_max.strength()),
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.intelligence(),
-        recipe.template.stats_max.intelligence()),
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.chance(),
-        recipe.template.stats_max.chance()),
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.agility(),
-        recipe.template.stats_max.agility()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.range(),
-        recipe.template.stats_max.range()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.movement(),
-        recipe.template.stats_max.movement()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.action(),
-        recipe.template.stats_max.action()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.critical(),
-        recipe.template.stats_max.critical()),
-      generator.generate_u16_in_range(
-        recipe.template.stats_min.raw_damage(),
-        recipe.template.stats_max.raw_damage()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.critical_chance(),
-        recipe.template.stats_max.critical_chance()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.critical_outcomes(),
-        recipe.template.stats_max.critical_outcomes()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.earth_resistance(),
-        recipe.template.stats_max.earth_resistance()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.fire_resistance(),
-        recipe.template.stats_max.fire_resistance()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.water_resistance(),
-        recipe.template.stats_max.water_resistance()),
-      generator.generate_u8_in_range(
-        recipe.template.stats_min.air_resistance(),
-        recipe.template.stats_max.air_resistance())
-    );
-
-    item_stats::augment_with_stats(&mut crafted_item, stats);
-
-    if(recipe.template.damages.length() > 0) {
-      item_damages::augment_with_damages(&mut crafted_item, recipe.template.damages);
-    };
 
     events::emit_item_mint_event(
       object::id(&crafted_item),
@@ -355,7 +288,7 @@ module aresrpg::item_recipe {
   public fun admin_create_template(
     admin: &AdminCap,
     name: String,
-    item_category: ItemCategory,
+    item_category: String,
     item_set: String,
     item_type: String,
     level: u8,
@@ -376,5 +309,90 @@ module aresrpg::item_recipe {
       stats_max,
       damages
     }
+  }
+
+  // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
+
+  public(package) fun item_from_template(
+    template: &ItemTemplate,
+    amount: u32,
+    random: &Random,
+    ctx: &mut TxContext
+  ): Item {
+    let mut item = item::new(
+      template.name,
+      template.item_category,
+      template.item_set,
+      template.item_type,
+      template.level,
+      amount,
+      amount > 1,
+      ctx
+    );
+
+    let mut generator = new_generator(random, ctx);
+
+    // all paths consume the same (@see https://docs.sui.io/guides/developer/advanced/randomness-onchain)
+    let stats = item_stats::new(
+      generator.generate_u16_in_range(
+        template.stats_min.vitality(),
+        template.stats_max.vitality()),
+      generator.generate_u16_in_range(
+        template.stats_min.wisdom(),
+        template.stats_max.wisdom()),
+      generator.generate_u16_in_range(
+        template.stats_min.strength(),
+        template.stats_max.strength()),
+      generator.generate_u16_in_range(
+        template.stats_min.intelligence(),
+        template.stats_max.intelligence()),
+      generator.generate_u16_in_range(
+        template.stats_min.chance(),
+        template.stats_max.chance()),
+      generator.generate_u16_in_range(
+        template.stats_min.agility(),
+        template.stats_max.agility()),
+      generator.generate_u8_in_range(
+        template.stats_min.range(),
+        template.stats_max.range()),
+      generator.generate_u8_in_range(
+        template.stats_min.movement(),
+        template.stats_max.movement()),
+      generator.generate_u8_in_range(
+        template.stats_min.action(),
+        template.stats_max.action()),
+      generator.generate_u8_in_range(
+        template.stats_min.critical(),
+        template.stats_max.critical()),
+      generator.generate_u16_in_range(
+        template.stats_min.raw_damage(),
+        template.stats_max.raw_damage()),
+      generator.generate_u8_in_range(
+        template.stats_min.critical_chance(),
+        template.stats_max.critical_chance()),
+      generator.generate_u8_in_range(
+        template.stats_min.critical_outcomes(),
+        template.stats_max.critical_outcomes()),
+      generator.generate_u8_in_range(
+        template.stats_min.earth_resistance(),
+        template.stats_max.earth_resistance()),
+      generator.generate_u8_in_range(
+        template.stats_min.fire_resistance(),
+        template.stats_max.fire_resistance()),
+      generator.generate_u8_in_range(
+        template.stats_min.water_resistance(),
+        template.stats_max.water_resistance()),
+      generator.generate_u8_in_range(
+        template.stats_min.air_resistance(),
+        template.stats_max.air_resistance())
+    );
+
+    item_stats::augment_with_stats(&mut item, stats);
+
+    if(template.damages.length() > 0) {
+      item_damages::augment_with_damages(&mut item, template.damages);
+    };
+
+    item
   }
 }

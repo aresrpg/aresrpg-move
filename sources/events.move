@@ -72,8 +72,16 @@ module aresrpg::events {
     recipe_id: ID
   }
 
+  public struct SaleCreateEvent has copy, drop {
+    sale_id: ID
+  }
+
   public struct RecipeDeleteEvent has copy, drop {
     recipe_id: ID
+  }
+
+  public struct SaleDeleteEvent has copy, drop {
+    sale_id: ID
   }
 
   public struct ItemMergeEvent has copy, drop {
@@ -231,6 +239,22 @@ module aresrpg::events {
   ) {
     emit(RecipeDeleteEvent {
       recipe_id
+    });
+  }
+
+  public(package) fun emit_sale_create_event(
+    sale_id: ID
+  ) {
+    emit(SaleCreateEvent {
+      sale_id
+    });
+  }
+
+  public(package) fun emit_sale_delete_event(
+    sale_id: ID
+  ) {
+    emit(SaleDeleteEvent {
+      sale_id
     });
   }
 

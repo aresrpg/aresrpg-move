@@ -15,39 +15,6 @@ const Token = name =>
 const tx = new Transaction()
 
 const RECIPES = {
-  fud_hat: {
-    level: 1,
-    ingredients: [
-      {
-        name: 'fud',
-        item_type: Token('fud'),
-        amount: 11000000000n,
-      },
-      {
-        name: 'Canine Skull',
-        item_type: 'canine_skull',
-        amount: 3,
-      },
-    ],
-    template: {
-      name: 'Mighty Fud Skull',
-      item_category: ITEM_CATEGORY.HAT,
-      item_set: 'fud',
-      item_type: 'fud_hat',
-      level: 1,
-      stats_min: {
-        vitality: 0,
-        chance: 3,
-        range: 0,
-      },
-      stats_max: {
-        vitality: 20,
-        chance: 5,
-        range: 1,
-      },
-      damages: [],
-    },
-  },
   suicunio: {
     level: 1,
     ingredients: [
@@ -102,12 +69,6 @@ const RECIPES = {
 }
 
 sdk.add_header(tx)
-
-sdk.admin_create_recipe({
-  tx,
-  ...RECIPES.fud_hat,
-  admin_cap: sdk.ADMIN_CAP,
-})
 
 sdk.admin_create_recipe({
   tx,

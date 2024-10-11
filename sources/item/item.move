@@ -19,39 +19,14 @@ module aresrpg::item {
   const EWronItemType: u64 = 101;
   const EWrongAmount: u64 = 102;
   const ENotStackable: u64 = 103;
+  const EWrongCategory: u64 = 104;
 
   // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
-
-  public enum ItemCategory has store, copy, drop {
-    misc,
-    consumable,
-    relic,
-    rune,
-    mount,
-    hat,
-    cloack,
-    amulet,
-    ring,
-    belt,
-    boots,
-    bow,
-    wand,
-    staff,
-    dagger,
-    scythe,
-    axe,
-    hammer,
-    shovel,
-    sword,
-    fishingRod,
-    pickaxe,
-    title,
-  }
 
   public struct Item has key, store {
     id: UID,
     name: String,
-    item_category: ItemCategory,
+    item_category: String,
     item_set: String,
     /// unique type (ex: reset_orb)
     item_type: String,
@@ -118,7 +93,7 @@ module aresrpg::item {
 
   public(package) fun new(
     name: String,
-    item_category: ItemCategory,
+    item_category: String,
     item_set: String,
     item_type: String,
     level: u8,
@@ -131,6 +106,8 @@ module aresrpg::item {
       // if the item has an amount greater than 1, it must be stackable
       assert!(stackable, ENotStackable);
     };
+
+    verify_category(item_category);
 
     Item {
       id: object::new(ctx),
@@ -233,5 +210,36 @@ module aresrpg::item {
     self.amount = self.amount + item.amount;
 
     item.destroy();
+  }
+
+  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
+
+  fun verify_category(category: String) {
+    assert!(
+      category == b"misc".to_string() ||
+      category == b"consumable".to_string() ||
+      category == b"relic".to_string() ||
+      category == b"rune".to_string() ||
+      category == b"mount".to_string() ||
+      category == b"hat".to_string() ||
+      category == b"cloack".to_string() ||
+      category == b"amulet".to_string() ||
+      category == b"ring".to_string() ||
+      category == b"belt".to_string() ||
+      category == b"boots".to_string() ||
+      category == b"bow".to_string() ||
+      category == b"wand".to_string() ||
+      category == b"staff".to_string() ||
+      category == b"dagger".to_string() ||
+      category == b"scythe".to_string() ||
+      category == b"axe".to_string() ||
+      category == b"hammer".to_string() ||
+      category == b"shovel".to_string() ||
+      category == b"sword".to_string() ||
+      category == b"fishingRod".to_string() ||
+      category == b"pickaxe".to_string() ||
+      category == b"title".to_string(),
+      EWrongCategory
+    );
   }
 }

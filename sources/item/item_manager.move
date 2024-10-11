@@ -11,7 +11,7 @@ module aresrpg::item_manager {
   use std::string::{String};
 
   use aresrpg::{
-    item::{Self as a_item, Item, ItemCategory},
+    item::{Self as a_item, Item},
     admin::AdminCap,
     version::Version,
     extension::{
@@ -178,7 +178,7 @@ module aresrpg::item_manager {
   public fun admin_mint(
     admin: &AdminCap,
     name: String,
-    item_category: ItemCategory,
+    item_category: String,
     item_set: String,
     item_type: String,
     level: u8,
