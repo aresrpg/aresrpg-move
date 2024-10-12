@@ -18,7 +18,9 @@
     "mint_item:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/mint_item.js",
     "mint_item:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/mint_item.js",
     "recipe:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_recipe.js",
-    "recipe:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_recipe.js"
+    "recipe:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_recipe.js",
+    "sale:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_sale.js",
+    "sale:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_sale.js"
   },
   "keywords": [],
   "author": "",
