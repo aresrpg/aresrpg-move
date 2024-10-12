@@ -10,7 +10,6 @@ module aresrpg::item_sale {
     transfer_policy::TransferPolicy,
     random::Random,
     kiosk_extension,
-    tx_context::sender
   };
 
   use aresrpg::{
@@ -112,7 +111,7 @@ module aresrpg::item_sale {
 
   public fun admin_delete_sale(
     admin: &AdminCap,
-    recipe: ItemSale,
+    sale: ItemSale,
     ctx: &mut TxContext
   ): Coin<SUI> {
     admin.verify(ctx);
@@ -121,7 +120,7 @@ module aresrpg::item_sale {
       id,
       profits,
       ..
-    } = recipe;
+    } = sale;
 
     events::emit_sale_delete_event(id.uid_to_inner());
 
