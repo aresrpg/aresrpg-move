@@ -42,6 +42,7 @@ module aresrpg::item_feed {
     id: UID,
     stomach: Balance<T>,
     last_feed: u64,
+    pet_id: ID
   }
 
   public struct FeedKey has store, copy, drop {}
@@ -55,13 +56,15 @@ module aresrpg::item_feed {
     feed_max: u64,
     ctx: &mut TxContext,
   ) {
-    events::emit_pet_feed_event(uid.to_inner());
+    let pet_id = uid.to_inner();
+    events::emit_pet_feed_event(pet_id);
 
     if(!dof::exists_(uid, FeedKey {})) {
       dof::add(uid, FeedKey {}, FeedableAbility<T> {
         id: object::new(ctx),
         stomach: balance::zero(),
         last_feed: 0,
+        pet_id
       });
     };
 

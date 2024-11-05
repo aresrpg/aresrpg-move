@@ -10,6 +10,7 @@ module aresrpg::character_stats {
     character::Character,
     version::Version,
     admin::AdminCap,
+    extension,
     protected_policy::AresRPG_TransferPolicy,
     item::Item,
     events::emit_stats_reset_event,
@@ -52,12 +53,13 @@ public struct StatsKey has copy, drop, store {}
   // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
   /// Reset the character stats using the orb of reset.
-  /// That kind of actions happens when the character isn't selected
   /// We still need the kiosk to access the orb item and destroy it
   public fun reset_character_stats(
-    kiosk: &mut Kiosk,
-    cap: &KioskOwnerCap,
-    character: &mut Character,
+    item_kiosk: &mut Kiosk,
+    item_kiosk_cap: &KioskOwnerCap,
+    character_kiosk: &mut Kiosk,
+    character_kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     item_id: ID,
     policy: &AresRPG_TransferPolicy<Item>,
     version: &Version,
@@ -66,9 +68,16 @@ public struct StatsKey has copy, drop, store {}
     version.assert_latest();
 
     let item = policy.extract_from_kiosk<Item>(
-      kiosk,
-      cap,
+      item_kiosk,
+      item_kiosk_cap,
       item_id,
+      ctx
+    );
+
+    let character = extension::borrow_character_mut(
+      character_kiosk,
+      character_kiosk_cap,
+      character_id,
       ctx
     );
 
@@ -83,12 +92,21 @@ public struct StatsKey has copy, drop, store {}
 
   /// Add stats to the character if there are enough available points
   public fun add_vitality(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     amount: u16,
     version: &Version,
+    ctx: &mut TxContext,
   ) {
     version.assert_latest();
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let stats = borrow_stats_mut(character);
 
     stats.use_points(amount);
@@ -96,12 +114,21 @@ public struct StatsKey has copy, drop, store {}
   }
 
   public fun add_wisdom(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     amount: u16,
     version: &Version,
+    ctx: &mut TxContext,
   ) {
     version.assert_latest();
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let stats = borrow_stats_mut(character);
 
     stats.use_points(amount);
@@ -109,12 +136,21 @@ public struct StatsKey has copy, drop, store {}
   }
 
   public fun add_strength(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     amount: u16,
     version: &Version,
+    ctx: &mut TxContext,
 ) {
     version.assert_latest();
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let stats = borrow_stats_mut(character);
 
     stats.use_points(amount);
@@ -122,12 +158,21 @@ public struct StatsKey has copy, drop, store {}
   }
 
   public fun add_intelligence(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     amount: u16,
     version: &Version,
+    ctx: &mut TxContext,
   ) {
     version.assert_latest();
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let stats = borrow_stats_mut(character);
 
     stats.use_points(amount);
@@ -135,12 +180,21 @@ public struct StatsKey has copy, drop, store {}
   }
 
   public fun add_chance(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     amount: u16,
     version: &Version,
+    ctx: &mut TxContext,
   ) {
     version.assert_latest();
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let stats = borrow_stats_mut(character);
 
     stats.use_points(amount);
@@ -148,12 +202,21 @@ public struct StatsKey has copy, drop, store {}
   }
 
   public fun add_agility(
-    character: &mut Character,
+    kiosk: &mut Kiosk,
+    kiosk_cap: &KioskOwnerCap,
+    character_id: ID,
     amount: u16,
     version: &Version,
+    ctx: &mut TxContext,
   ) {
     version.assert_latest();
 
+    let character = extension::borrow_character_mut(
+      kiosk,
+      kiosk_cap,
+      character_id,
+      ctx
+    );
     let stats = borrow_stats_mut(character);
 
     stats.use_points(amount);
