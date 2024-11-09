@@ -89,6 +89,10 @@ module aresrpg::item {
     self.item_type
   }
 
+  public fun minted_in(self: &Item): String {
+    self.minted_in
+  }
+
   // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 
   public(package) fun new(
@@ -222,7 +226,7 @@ module aresrpg::item {
       category == b"rune".to_string() ||
       category == b"mount".to_string() ||
       category == b"hat".to_string() ||
-      category == b"cloack".to_string() ||
+      category == b"cloak".to_string() ||
       category == b"amulet".to_string() ||
       category == b"ring".to_string() ||
       category == b"belt".to_string() ||
