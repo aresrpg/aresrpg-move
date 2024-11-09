@@ -44,7 +44,7 @@ txb.moveCall({
   arguments: [txb.object(sdk.UPGRADE_CAP), receipt],
 })
 
-console.log('upgrading package...')
+console.log('upgrading package...', sdk.LATEST_PACKAGE_ID)
 
 const result = await sdk.sui_client.signAndExecuteTransaction({
   signer: keypair,

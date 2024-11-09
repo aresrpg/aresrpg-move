@@ -3,7 +3,7 @@ import { NETWORK, keypair, sdk } from './client.js'
 import { ITEM_CATEGORY } from '@aresrpg/aresrpg-sdk/items'
 
 const ADDRESS = keypair.getPublicKey().toSuiAddress()
-const RECIPIENT = '0xb1329007ab91c20209db03bf4126bb7b002b7de4fca20b576ac3ad48b5e88224'
+const RECIPIENT = '0x306e427a52f9bebf4533343f9af02f81bb2e41001f984bed4a2e58ddb254cab3'
 
 console.log('==================== [ MINTING ITEM ] ====================')
 console.log('network:', NETWORK)
@@ -72,19 +72,20 @@ const ITEMS = [
   //   item_set: 'none',
   //   item_type: 'early_access_key',
   //   level: 1,
+  //   amount: 150,
   // },
-  {
-    name: 'Prime Machin #3101',
-    item_category: ITEM_CATEGORY.TITLE,
-    item_set: 'Mirai',
-    item_type: 'primemachin',
-    level: 10,
-    stats: {
-      strength: 40,
-      intelligence: 40,
-      raw_damage: 3,
-    },
-  },
+  // {
+  //   name: 'Prime Machin #3101',
+  //   item_category: ITEM_CATEGORY.TITLE,
+  //   item_set: 'Mirai',
+  //   item_type: 'primemachin',
+  //   level: 10,
+  //   stats: {
+  //     strength: 40,
+  //     intelligence: 40,
+  //     raw_damage: 3,
+  //   },
+  // },
   // {
   //   name: 'Canine Skull',
   //   item_category: ITEM_CATEGORY.RESOURCE,
@@ -92,13 +93,13 @@ const ITEMS = [
   //   level: 1,
   //   amount: 450,
   // },
-  // {
-  //   name: 'Rune de Sui',
-  //   item_category: ITEM_CATEGORY.RUNE,
-  //   item_type: 'sui_rune',
-  //   level: 1,
-  //   amount: 200,
-  // },
+  {
+    name: 'Rune de Sui',
+    item_category: ITEM_CATEGORY.RUNE,
+    item_type: 'sui_rune',
+    level: 1,
+    amount: 150,
+  },
   // {
   //   name: 'Vaporeon',
   //   item_category: ITEM_CATEGORY.PET,
@@ -120,7 +121,7 @@ const ITEMS = [
 ITEMS.forEach(item => {
   sdk.admin_mint_item({
     tx,
-    recipient_kiosk: '0xa7b9d490972387e9fc40f08c5c30ccb573098428153154a052d41d75ca80c629',
+    recipient_kiosk: '0xa7693bb7d1a9dade7bbe4bd84795188a9889105350e6481c9392569bf50dd974',
     ...item,
   })
 })
