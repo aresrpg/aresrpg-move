@@ -101,7 +101,7 @@ module aresrpg::character_inventory {
     assert!(
       slot == b"hat".to_string() ||
       slot == b"amulet".to_string() ||
-      slot == b"cloack".to_string() ||
+      slot == b"cloak".to_string() ||
       slot == b"left_ring".to_string() ||
       slot == b"right_ring".to_string() ||
       slot == b"belt".to_string() ||

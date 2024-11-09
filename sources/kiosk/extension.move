@@ -168,7 +168,7 @@ module aresrpg::extension {
     assert!(kiosk_extension::is_installed<AresRPG>(kiosk), EExtensionNotInstalled);
 
     let mut item = item;
-    item.set_minted_in(object::id(kiosk).id_to_bytes().to_string());
+    item.set_minted_in(object::id(kiosk).to_address().to_string());
 
     borrow_object_bag(kiosk, StorageKey<Item> {}, ctx)
       .add(object::id(&item), item);
