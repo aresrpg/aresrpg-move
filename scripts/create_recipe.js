@@ -21,23 +21,23 @@ const RECIPES = {
       {
         name: 'hsui',
         item_type: Token('hsui'),
-        amount: 25000000000n,
+        amount: 1000000000n,
       },
       {
         name: 'afsui',
         item_type: Token('afsui'),
-        amount: 14000000000n,
+        amount: 1000000000n,
       },
       {
         name: 'Rune de Sui',
         item_type: 'sui_rune',
-        amount: 1,
-      },
-      {
-        name: 'Canine Skull',
-        item_type: 'canine_skull',
         amount: 5,
       },
+      // {
+      //   name: 'Canine Skull',
+      //   item_type: 'canine_skull',
+      //   amount: 1,
+      // },
     ],
     template: {
       name: 'El Suicunio',

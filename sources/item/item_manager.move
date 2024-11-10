@@ -89,10 +89,8 @@ module aresrpg::item_manager {
     version.assert_latest();
 
     let item = kiosk.borrow_mut<Item>(kiosk_cap, item_id);
-    let mut new_item = item.split(amount, ctx);
+    let new_item = item.split(amount, ctx);
     let new_item_id = object::id(&new_item);
-
-    new_item.set_minted_in(item.minted_in());
 
     events::emit_item_split_event(
       item_id,

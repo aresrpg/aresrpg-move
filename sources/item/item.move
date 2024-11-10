@@ -126,6 +126,7 @@ module aresrpg::item {
     }
   }
 
+  /// Indicate the item was minted in a specific kiosk extension, when the item is removed from the extension the minted_in field is cleared
   public(package) fun set_minted_in(self: &mut Item, kiosk_id: String) {
     self.minted_in = kiosk_id;
   }
