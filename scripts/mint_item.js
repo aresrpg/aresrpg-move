@@ -93,13 +93,13 @@ const ITEMS = [
   //   level: 1,
   //   amount: 450,
   // },
-  {
-    name: 'Rune de Sui',
-    item_category: ITEM_CATEGORY.RUNE,
-    item_type: 'sui_rune',
-    level: 1,
-    amount: 150,
-  },
+  // {
+  //   name: 'Rune de Sui',
+  //   item_category: ITEM_CATEGORY.RUNE,
+  //   item_type: 'sui_rune',
+  //   level: 1,
+  //   amount: 150,
+  // },
   // {
   //   name: 'Vaporeon',
   //   item_category: ITEM_CATEGORY.PET,
