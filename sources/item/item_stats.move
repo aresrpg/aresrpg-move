@@ -12,27 +12,30 @@ module aresrpg::item_stats {
 /// The item is stackable, you can't add damages to it
 const EItemStackable: u64 = 101;
 
+const SHIFT_U16: u16 = 32768; // Center point for signed values
+
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
   public struct ItemStatistics has store, copy, drop {
+    // All values centered at SHIFT_U16 (32768)
     vitality: u16,
     wisdom: u16,
     strength: u16,
     intelligence: u16,
     chance: u16,
     agility: u16,
-    range: u8,
-    movement: u8,
-    action: u8,
-    critical: u8,
+    range: u16,
+    movement: u16,
+    action: u16,
+    critical: u16,
     raw_damage: u16,
-    critical_chance: u8,
-    critical_outcomes: u8,
+    critical_chance: u16,
+    critical_outcomes: u16,
 
-    earth_resistance: u8,
-    fire_resistance: u8,
-    water_resistance: u8,
-    air_resistance: u8,
+    earth_resistance: u16,
+    fire_resistance: u16,
+    water_resistance: u16,
+    air_resistance: u16,
   }
 
   public struct StatsKey has copy, drop, store {}
@@ -46,18 +49,18 @@ const EItemStackable: u64 = 101;
     intelligence: u16,
     chance: u16,
     agility: u16,
-    range: u8,
-    movement: u8,
-    action: u8,
-    critical: u8,
+    range: u16,
+    movement: u16,
+    action: u16,
+    critical: u16,
     raw_damage: u16,
-    critical_chance: u8,
-    critical_outcomes: u8,
+    critical_chance: u16,
+    critical_outcomes: u16,
 
-    earth_resistance: u8,
-    fire_resistance: u8,
-    water_resistance: u8,
-    air_resistance: u8,
+    earth_resistance: u16,
+    fire_resistance: u16,
+    water_resistance: u16,
+    air_resistance: u16,
   ): ItemStatistics {
     ItemStatistics {
       vitality,
@@ -116,19 +119,19 @@ const EItemStackable: u64 = 101;
     self.agility
   }
 
-  public fun range(self: &ItemStatistics): u8 {
+  public fun range(self: &ItemStatistics): u16 {
     self.range
   }
 
-  public fun movement(self: &ItemStatistics): u8 {
+  public fun movement(self: &ItemStatistics): u16 {
     self.movement
   }
 
-  public fun action(self: &ItemStatistics): u8 {
+  public fun action(self: &ItemStatistics): u16 {
     self.action
   }
 
-  public fun critical(self: &ItemStatistics): u8 {
+  public fun critical(self: &ItemStatistics): u16 {
     self.critical
   }
 
@@ -136,27 +139,27 @@ const EItemStackable: u64 = 101;
     self.raw_damage
   }
 
-  public fun critical_chance(self: &ItemStatistics): u8 {
+  public fun critical_chance(self: &ItemStatistics): u16 {
     self.critical_chance
   }
 
-  public fun critical_outcomes(self: &ItemStatistics): u8 {
+  public fun critical_outcomes(self: &ItemStatistics): u16 {
     self.critical_outcomes
   }
 
-  public fun earth_resistance(self: &ItemStatistics): u8 {
+  public fun earth_resistance(self: &ItemStatistics): u16 {
     self.earth_resistance
   }
 
-  public fun fire_resistance(self: &ItemStatistics): u8 {
+  public fun fire_resistance(self: &ItemStatistics): u16 {
     self.fire_resistance
   }
 
-  public fun water_resistance(self: &ItemStatistics): u8 {
+  public fun water_resistance(self: &ItemStatistics): u16 {
     self.water_resistance
   }
 
-  public fun air_resistance(self: &ItemStatistics): u8 {
+  public fun air_resistance(self: &ItemStatistics): u16 {
     self.air_resistance
   }
 
@@ -170,18 +173,18 @@ const EItemStackable: u64 = 101;
     intelligence: u16,
     chance: u16,
     agility: u16,
-    range: u8,
-    movement: u8,
-    action: u8,
-    critical: u8,
+    range: u16,
+    movement: u16,
+    action: u16,
+    critical: u16,
     raw_damage: u16,
-    critical_chance: u8,
-    critical_outcomes: u8,
+    critical_chance: u16,
+    critical_outcomes: u16,
 
-    earth_resistance: u8,
-    fire_resistance: u8,
-    water_resistance: u8,
-    air_resistance: u8,
+    earth_resistance: u16,
+    fire_resistance: u16,
+    water_resistance: u16,
+    air_resistance: u16,
 
     ctx: &TxContext
   ): ItemStatistics {

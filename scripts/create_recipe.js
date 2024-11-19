@@ -47,10 +47,10 @@ const RECIPES = {
       level: 7,
       stats_min: {
         vitality: 0,
-        chance: 10,
+        chance: -10,
         water_resistance: 2,
         air_resistance: 0,
-        agility: 0,
+        agility: -20,
         raw_damage: 0,
         intelligence: 0,
       },

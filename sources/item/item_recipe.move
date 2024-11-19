@@ -352,37 +352,37 @@ module aresrpg::item_recipe {
       generator.generate_u16_in_range(
         template.stats_min.agility(),
         template.stats_max.agility()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.range(),
         template.stats_max.range()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.movement(),
         template.stats_max.movement()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.action(),
         template.stats_max.action()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.critical(),
         template.stats_max.critical()),
       generator.generate_u16_in_range(
         template.stats_min.raw_damage(),
         template.stats_max.raw_damage()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.critical_chance(),
         template.stats_max.critical_chance()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.critical_outcomes(),
         template.stats_max.critical_outcomes()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.earth_resistance(),
         template.stats_max.earth_resistance()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.fire_resistance(),
         template.stats_max.fire_resistance()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.water_resistance(),
         template.stats_max.water_resistance()),
-      generator.generate_u8_in_range(
+      generator.generate_u16_in_range(
         template.stats_min.air_resistance(),
         template.stats_max.air_resistance())
     );

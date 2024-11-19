@@ -30,9 +30,9 @@
     "dotenv": "^16.4.5"
   },
   "dependencies": {
-    "@aresrpg/aresrpg-sdk": "4.4.0",
-    "@mysten/kiosk": "^0.9.25",
-    "@mysten/sui": "^1.14.2",
+    "@aresrpg/aresrpg-sdk": "4.6.1",
+    "@mysten/kiosk": "^0.9.27",
+    "@mysten/sui": "^1.14.4",
     "bignumber.js": "^9.1.2",
     "eslint": "^8.57.1",
     "husky": "^4.3.8"
