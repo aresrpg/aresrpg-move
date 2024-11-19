@@ -12,8 +12,6 @@ module aresrpg::item_stats {
 /// The item is stackable, you can't add damages to it
 const EItemStackable: u64 = 101;
 
-const SHIFT_U16: u16 = 32768; // Center point for signed values
-
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
   public struct ItemStatistics has store, copy, drop {
