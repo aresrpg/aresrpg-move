@@ -81,7 +81,7 @@ const types = await find_types(
     digest: result.digest,
     package_id: sdk.PACKAGE_ID,
   },
-  sdk.sui_client
+  sdk.sui_client,
 )
 
 console.dir(types, { depth: Infinity })

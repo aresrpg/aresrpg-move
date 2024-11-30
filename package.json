@@ -20,12 +20,16 @@
     "recipe:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_recipe.js",
     "recipe:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_recipe.js",
     "sale:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/create_sale.js",
-    "sale:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_sale.js"
+    "sale:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/create_sale.js",
+    "admincaps:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/admin_mint_caps.js",
+    "admincaps:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/admin_mint_caps.js",
+    "format": "prettier . --write"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@mysten/prettier-plugin-move": "^0.1.1",
     "@types/node": "^22.9.0",
     "dotenv": "^16.4.5"
   },

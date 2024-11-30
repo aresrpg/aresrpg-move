@@ -18,7 +18,7 @@ const [, cli_result] = execSync(
   sui move build ${NETWORK === 'mainnet' ? '' : '--dev'} --dump-bytecode-as-base64 --path ./`,
   {
     encoding: 'utf-8',
-  }
+  },
 ).split('\n')
 
 const { modules, dependencies, digest: build_digest } = JSON.parse(cli_result)
@@ -96,7 +96,7 @@ const types = await find_types(
     digest: result.digest,
     package_id: sdk.PACKAGE_ID,
   },
-  sdk.sui_client
+  sdk.sui_client,
 )
 
 console.log('package published:', result.digest)

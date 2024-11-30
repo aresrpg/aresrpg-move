@@ -1,11 +1,8 @@
-module aresrpg::item_stats {
+module aresrpg::item_stats;
 
-  // This module is responsible for managing the statistics of an item
+use aresrpg::item::Item;
 
-  use aresrpg::{
-    admin::AdminCap,
-    item::Item,
-  };
+// This module is responsible for managing the statistics of an item
 
 // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
@@ -14,210 +11,144 @@ const EItemStackable: u64 = 101;
 
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
-  public struct ItemStatistics has store, copy, drop {
-    // All values centered at SHIFT_U16 (32768)
-    vitality: u16,
-    wisdom: u16,
-    strength: u16,
-    intelligence: u16,
-    chance: u16,
-    agility: u16,
-    range: u16,
-    movement: u16,
-    action: u16,
-    critical: u16,
-    raw_damage: u16,
-    critical_chance: u16,
-    critical_outcomes: u16,
+public struct ItemStatistics has store, copy, drop {
+  // All values centered at SHIFT_U16 (32768)
+  vitality: u16,
+  wisdom: u16,
+  strength: u16,
+  intelligence: u16,
+  chance: u16,
+  agility: u16,
+  range: u16,
+  movement: u16,
+  action: u16,
+  critical: u16,
+  raw_damage: u16,
+  critical_chance: u16,
+  critical_outcomes: u16,
+  earth_resistance: u16,
+  fire_resistance: u16,
+  water_resistance: u16,
+  air_resistance: u16,
+}
 
-    earth_resistance: u16,
-    fire_resistance: u16,
-    water_resistance: u16,
-    air_resistance: u16,
+public struct StatsKey has copy, drop, store {}
+
+// ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
+
+public(package) fun new(
+  vitality: u16,
+  wisdom: u16,
+  strength: u16,
+  intelligence: u16,
+  chance: u16,
+  agility: u16,
+  range: u16,
+  movement: u16,
+  action: u16,
+  critical: u16,
+  raw_damage: u16,
+  critical_chance: u16,
+  critical_outcomes: u16,
+  earth_resistance: u16,
+  fire_resistance: u16,
+  water_resistance: u16,
+  air_resistance: u16,
+): ItemStatistics {
+  ItemStatistics {
+    vitality,
+    wisdom,
+    strength,
+    intelligence,
+    chance,
+    agility,
+    range,
+    movement,
+    action,
+    critical,
+    raw_damage,
+    critical_chance,
+    critical_outcomes,
+    earth_resistance,
+    fire_resistance,
+    water_resistance,
+    air_resistance,
   }
+}
 
-  public struct StatsKey has copy, drop, store {}
+public(package) fun augment_with_stats(item: &mut Item, stats: ItemStatistics) {
+  // The item can only have stats if it's not stackable
+  assert!(!item.stackable(), EItemStackable);
 
-  // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
+  item.add_field(StatsKey {}, stats);
+}
 
-  public(package) fun new(
-    vitality: u16,
-    wisdom: u16,
-    strength: u16,
-    intelligence: u16,
-    chance: u16,
-    agility: u16,
-    range: u16,
-    movement: u16,
-    action: u16,
-    critical: u16,
-    raw_damage: u16,
-    critical_chance: u16,
-    critical_outcomes: u16,
+// ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
-    earth_resistance: u16,
-    fire_resistance: u16,
-    water_resistance: u16,
-    air_resistance: u16,
-  ): ItemStatistics {
-    ItemStatistics {
-      vitality,
-      wisdom,
-      strength,
-      intelligence,
-      chance,
-      agility,
-      range,
-      movement,
-      action,
-      critical,
-      raw_damage,
-      critical_chance,
-      critical_outcomes,
-      earth_resistance,
-      fire_resistance,
-      water_resistance,
-      air_resistance,
-    }
-  }
+public fun vitality(self: &ItemStatistics): u16 {
+  self.vitality
+}
 
-  public(package) fun augment_with_stats(
-    item: &mut Item,
-    stats: ItemStatistics
-  ) {
-    // The item can only have stats if it's not stackable
-    assert!(!item.stackable(), EItemStackable);
+public fun wisdom(self: &ItemStatistics): u16 {
+  self.wisdom
+}
 
-    item.add_field(StatsKey {}, stats);
-  }
+public fun strength(self: &ItemStatistics): u16 {
+  self.strength
+}
 
-  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
+public fun intelligence(self: &ItemStatistics): u16 {
+  self.intelligence
+}
 
-  public fun vitality(self: &ItemStatistics): u16 {
-    self.vitality
-  }
+public fun chance(self: &ItemStatistics): u16 {
+  self.chance
+}
 
-  public fun wisdom(self: &ItemStatistics): u16 {
-    self.wisdom
-  }
+public fun agility(self: &ItemStatistics): u16 {
+  self.agility
+}
 
-  public fun strength(self: &ItemStatistics): u16 {
-    self.strength
-  }
+public fun range(self: &ItemStatistics): u16 {
+  self.range
+}
 
-  public fun intelligence(self: &ItemStatistics): u16 {
-    self.intelligence
-  }
+public fun movement(self: &ItemStatistics): u16 {
+  self.movement
+}
 
-  public fun chance(self: &ItemStatistics): u16 {
-    self.chance
-  }
+public fun action(self: &ItemStatistics): u16 {
+  self.action
+}
 
-  public fun agility(self: &ItemStatistics): u16 {
-    self.agility
-  }
+public fun critical(self: &ItemStatistics): u16 {
+  self.critical
+}
 
-  public fun range(self: &ItemStatistics): u16 {
-    self.range
-  }
+public fun raw_damage(self: &ItemStatistics): u16 {
+  self.raw_damage
+}
 
-  public fun movement(self: &ItemStatistics): u16 {
-    self.movement
-  }
+public fun critical_chance(self: &ItemStatistics): u16 {
+  self.critical_chance
+}
 
-  public fun action(self: &ItemStatistics): u16 {
-    self.action
-  }
+public fun critical_outcomes(self: &ItemStatistics): u16 {
+  self.critical_outcomes
+}
 
-  public fun critical(self: &ItemStatistics): u16 {
-    self.critical
-  }
+public fun earth_resistance(self: &ItemStatistics): u16 {
+  self.earth_resistance
+}
 
-  public fun raw_damage(self: &ItemStatistics): u16 {
-    self.raw_damage
-  }
+public fun fire_resistance(self: &ItemStatistics): u16 {
+  self.fire_resistance
+}
 
-  public fun critical_chance(self: &ItemStatistics): u16 {
-    self.critical_chance
-  }
+public fun water_resistance(self: &ItemStatistics): u16 {
+  self.water_resistance
+}
 
-  public fun critical_outcomes(self: &ItemStatistics): u16 {
-    self.critical_outcomes
-  }
-
-  public fun earth_resistance(self: &ItemStatistics): u16 {
-    self.earth_resistance
-  }
-
-  public fun fire_resistance(self: &ItemStatistics): u16 {
-    self.fire_resistance
-  }
-
-  public fun water_resistance(self: &ItemStatistics): u16 {
-    self.water_resistance
-  }
-
-  public fun air_resistance(self: &ItemStatistics): u16 {
-    self.air_resistance
-  }
-
-  // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
-
-  public fun admin_new(
-    admin: &AdminCap,
-    vitality: u16,
-    wisdom: u16,
-    strength: u16,
-    intelligence: u16,
-    chance: u16,
-    agility: u16,
-    range: u16,
-    movement: u16,
-    action: u16,
-    critical: u16,
-    raw_damage: u16,
-    critical_chance: u16,
-    critical_outcomes: u16,
-
-    earth_resistance: u16,
-    fire_resistance: u16,
-    water_resistance: u16,
-    air_resistance: u16,
-
-    ctx: &TxContext
-  ): ItemStatistics {
-    admin.verify(ctx);
-
-    new(
-      vitality,
-      wisdom,
-      strength,
-      intelligence,
-      chance,
-      agility,
-      range,
-      movement,
-      action,
-      critical,
-      raw_damage,
-      critical_chance,
-      critical_outcomes,
-      earth_resistance,
-      fire_resistance,
-      water_resistance,
-      air_resistance,
-    )
-  }
-
-  /// Allow the admin to compose damages on an item
-  public fun admin_augment_with_stats(
-    admin: &AdminCap,
-    item: &mut Item,
-    stats: ItemStatistics,
-    ctx: &TxContext
-  ) {
-    admin.verify(ctx);
-
-    augment_with_stats(item, stats);
-  }
+public fun air_resistance(self: &ItemStatistics): u16 {
+  self.air_resistance
 }

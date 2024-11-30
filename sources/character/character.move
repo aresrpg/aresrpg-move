@@ -1,258 +1,318 @@
-module aresrpg::character {
+module aresrpg::character;
 
-  // This module is the base character entity,
-  // it is used to initiate characters and manage their core datas.
+use aresrpg::{
+  auth::AuthKey,
+  character_registry::NameRegistry,
+  events,
+  protected_policy::AresRPG_TransferPolicy,
+  version::Version
+};
+use std::string::{utf8, String};
+use sui::{
+  display,
+  dynamic_field as dfield,
+  kiosk::{Kiosk, KioskOwnerCap},
+  package,
+  transfer_policy::TransferPolicy,
+  tx_context::sender,
+  vec_map::{Self, VecMap}
+};
 
-  use sui::{
-    tx_context::{sender},
-    package,
-    display,
-    dynamic_field as dfield,
-    object_bag::{Self, ObjectBag},
+// ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
+
+const EInventoryNotEmpty: u64 = 101;
+const EExperienceTooLow: u64 = 102;
+const EInvalidClasse: u64 = 103;
+const EInvalidColor: u64 = 104;
+
+const MIN_COLOR_VALUE: u32 = 0;
+const MAX_COLOR_VALUE: u32 = 16777215; // Equivalent to 0xFFFFFF
+
+// ╔════════════════ [ Type ] ════════════════════════════════════════════════ ]
+
+public struct Character has key, store {
+  id: UID,
+  name: String,
+  classe: String,
+  sex: String,
+  realm: String,
+  position: String,
+  experience: u32,
+  health: u16,
+  soul: u8,
+  inventory: VecMap<String, ID>,
+  color_1: u32,
+  color_2: u32,
+  color_3: u32,
+  vitality: u16,
+  wisdom: u16,
+  strength: u16,
+  intelligence: u16,
+  chance: u16,
+  agility: u16,
+  available_points: u16,
+}
+
+// one time witness
+public struct CHARACTER has drop {}
+
+// ╔════════════════ [ init ] ════════════════════════════════════════════ ]
+
+fun init(otw: CHARACTER, ctx: &mut TxContext) {
+  let keys = vector[
+    utf8(b"name"),
+    utf8(b"link"),
+    utf8(b"image_url"),
+    utf8(b"description"),
+    utf8(b"project_url"),
+    utf8(b"creator"),
+  ];
+
+  let values = vector[
+    utf8(b"{name}"),
+    utf8(b"https://app.aresrpg.world"),
+    utf8(b"https://assets.aresrpg.world/classe/{classe}_{sex}.jpg"),
+    utf8(b"Character part of the AresRPG universe."),
+    utf8(b"https://aresrpg.world"),
+    utf8(b"AresRPG"),
+  ];
+
+  let publisher = package::claim(otw, ctx);
+  let mut display = display::new_with_fields<Character>(
+    &publisher,
+    keys,
+    values,
+    ctx,
+  );
+
+  display::update_version(&mut display);
+
+  transfer::public_transfer(publisher, sender(ctx));
+  transfer::public_transfer(display, sender(ctx));
+}
+
+// ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
+
+/// Update character fields including stats, only verify if values provided
+public fun update_character(
+  _auth: &AuthKey,
+  self: &mut Character,
+  position: Option<String>,
+  realm: Option<String>,
+  experience: Option<u32>,
+  health: Option<u16>,
+  soul: Option<u8>,
+  vitality: Option<u16>,
+  wisdom: Option<u16>,
+  strength: Option<u16>,
+  intelligence: Option<u16>,
+  chance: Option<u16>,
+  agility: Option<u16>,
+  available_points: Option<u16>,
+  version: &Version,
+) {
+  version.assert_latest();
+
+  if (position.is_some()) {
+    self.position = position.destroy_some();
   };
 
-  use std::string::{utf8, String};
-
-  use aresrpg::{
-    character_registry::{NameRegistry},
-    admin::{AdminCap},
+  if (realm.is_some()) {
+    self.realm = realm.destroy_some();
   };
 
-  // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
-
-  const EInventoryNotEmpty: u64 = 101;
-  const EExperienceTooLow: u64 = 102;
-  const EInvalidClasse: u64 = 103;
-  const EInvalidColor: u64 = 104;
-
-  const MIN_COLOR_VALUE: u32 = 0;
-  const MAX_COLOR_VALUE: u32 = 16777215; // Equivalent to 0xFFFFFF
-
-  // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
-
-  public struct Character has key, store {
-    id: UID,
-    name: String,
-    classe: String,
-    sex: String,
-    realm: String,
-
-    position: String,
-    experience: u32,
-    health: u16,
-
-    // Easier to know in what kiosk the character is as moving it to the extension break
-    // the direct ownership link because of dynamic fields
-    selected_in: String,
-
-    // Represent the energy left, it goes down on death
-    soul: u8,
-    inventory: ObjectBag,
-
-    color_1: u32,
-    color_2: u32,
-    color_3: u32,
-  }
-
-
-  // one time witness
-  public struct CHARACTER has drop {}
-
-  fun init(otw: CHARACTER, ctx: &mut TxContext) {
-    let keys = vector[
-        utf8(b"name"),
-        utf8(b"link"),
-        utf8(b"image_url"),
-        utf8(b"description"),
-        utf8(b"project_url"),
-        utf8(b"creator"),
-    ];
-
-    let values = vector[
-        utf8(b"{name}"),
-        utf8(b"https://app.aresrpg.world"),
-        utf8(b"https://assets.aresrpg.world/classe/{classe}_{sex}.jpg"),
-        utf8(b"Character part of the AresRPG universe."),
-        utf8(b"https://aresrpg.world"),
-        utf8(b"AresRPG"),
-    ];
-
-    let publisher = package::claim(otw, ctx);
-    let mut display = display::new_with_fields<Character>(&publisher, keys, values, ctx);
-
-    display::update_version(&mut display);
-
-    transfer::public_transfer(publisher, sender(ctx));
-    transfer::public_transfer(display, sender(ctx));
-  }
-
-  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
-
-  public fun borrow_inventory(self: &Character): &ObjectBag {
-    &self.inventory
-  }
-
-  // ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
-
-  /// Set the position of a character
-  public fun admin_set_position(
-    self: &mut Character,
-    admin: &AdminCap,
-    position: String,
-    ctx: &TxContext
-  ) {
-    admin.verify(ctx);
-    self.position = position;
-  }
-
-  public fun admin_set_health(
-    self: &mut Character,
-    admin: &AdminCap,
-    health: u16,
-    ctx: &TxContext
-  ) {
-    admin.verify(ctx);
-    self.health = health;
-  }
-
-  public fun admin_set_soul(
-    self: &mut Character,
-    admin: &AdminCap,
-    soul: u8,
-    ctx: &TxContext
-  ) {
-    admin.verify(ctx);
-    self.soul = soul;
-  }
-
-  /// Add experience to a character
-  public fun admin_set_experience(
-    self: &mut Character,
-    admin: &AdminCap,
-    experience: u32,
-    ctx: &TxContext
-  ) {
-    admin.verify(ctx);
+  if (experience.is_some()) {
+    let experience = experience.destroy_some();
     assert!(experience > self.experience, EExperienceTooLow);
     self.experience = experience;
-  }
+  };
 
-  public fun admin_set_realm(
-    self: &mut Character,
-    admin: &AdminCap,
-    realm: String,
-    ctx: &TxContext
-  ) {
-    admin.verify(ctx);
-    self.realm = realm;
-  }
+  if (health.is_some()) {
+    self.health = health.destroy_some();
+  };
 
-  // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
+  if (soul.is_some()) {
+    self.soul = soul.destroy_some();
+  };
 
-  /// Create a new character, and add it to the name registry
-  public(package) fun new(
-    name_registry: &mut NameRegistry,
-    raw_name: String,
-    classe: String,
-    male: bool,
-    color_1: u32,
-    color_2: u32,
-    color_3: u32,
-    ctx: &mut TxContext
-  ): Character {
-    verify_classe(classe);
+  if (vitality.is_some()) {
+    self.vitality = vitality.destroy_some();
+  };
 
-    assert!(color_1 >= MIN_COLOR_VALUE && color_1 <= MAX_COLOR_VALUE, EInvalidColor);
+  if (wisdom.is_some()) {
+    self.wisdom = wisdom.destroy_some();
+  };
 
-    let name = raw_name.to_ascii().to_lowercase().to_string();
-    let sex = if(male) b"male".to_string() else b"female".to_string();
+  if (strength.is_some()) {
+    self.strength = strength.destroy_some();
+  };
 
-    name_registry.add_name(name, ctx);
+  if (intelligence.is_some()) {
+    self.intelligence = intelligence.destroy_some();
+  };
 
-    Character {
-      id: object::new(ctx),
-      name,
-      position: b"{\"x\":0,\"y\":0,\"z\":0}".to_string(),
-      realm: b"overworld".to_string(),
-      experience: 0,
-      classe,
-      sex,
-      health: 30,
-      selected_in: b"".to_string(),
-      soul: 100,
-      inventory: object_bag::new(ctx),
-      color_1,
-      color_2,
-      color_3,
-    }
-  }
+  if (chance.is_some()) {
+    self.chance = chance.destroy_some();
+  };
 
-  public(package) fun delete(
-    character: Character,
-    name_registry: &mut NameRegistry,
-  ) {
-    let Character {
-      id,
-      name,
-      inventory,
-      ..
-    } = character;
-    // prevent deletion of a character with items in inventory
-    assert!(inventory.is_empty(), EInventoryNotEmpty);
+  if (agility.is_some()) {
+    self.agility = agility.destroy_some();
+  };
 
-    inventory.destroy_empty();
-    name_registry.remove_name(name);
+  if (available_points.is_some()) {
+    self.available_points = available_points.destroy_some();
+  };
+}
 
-    object::delete(id);
-  }
+/// We use the protected policy to freely access the character and delete it.
+/// This function also requires the server's signature to ensure the deletion is authorized.
+/// Hence preventing abuse of sponsored gas storage fees.
+public fun delete(
+  _auth: &AuthKey,
+  kiosk: &mut Kiosk,
+  kiosk_cap: &KioskOwnerCap,
+  name_registry: &mut NameRegistry,
+  character_id: ID,
+  policy: &AresRPG_TransferPolicy<Character>,
+  version: &Version,
+  ctx: &mut TxContext,
+) {
+  version.assert_latest();
 
-  public(package) fun add_field<Key: copy + drop + store, Value: store>(
-    self: &mut Character,
-    key: Key,
-    value: Value,
-  ) {
-    dfield::add(&mut self.id, key, value);
-  }
+  let character = policy.extract_from_kiosk<Character>(
+    kiosk,
+    kiosk_cap,
+    character_id,
+    ctx,
+  );
 
-  public(package) fun has_field<Key: copy + drop + store>(
-    self: &Character,
-    key: Key
-  ): bool {
-    dfield::exists_(&self.id, key)
-  }
+  let Character {
+    id,
+    name,
+    inventory,
+    ..,
+  } = character;
 
-  public(package) fun borrow_field_mut<Key: copy + drop + store, Value: store>(
-    self: &mut Character,
-    key: Key,
-  ): &mut Value {
-    dfield::borrow_mut<Key, Value>(&mut self.id, key)
-  }
+  // prevent deletion of a character with items in inventory
+  assert!(inventory.is_empty(), EInventoryNotEmpty);
 
-  public(package) fun borrow_inventory_mut(self: &mut Character): &mut ObjectBag {
-    &mut self.inventory
-  }
+  name_registry.remove_name(name);
 
-  public(package) fun set_selected_in(self: &mut Character, kiosk_id: String) {
-    self.selected_in = kiosk_id;
-  }
+  object::delete(id);
+  events::emit_character_delete_event(character_id);
+}
 
-  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
+// ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
-  fun verify_classe(classe: String) {
-    assert!(
-      classe == b"shugo".to_string() ||
-      classe == b"tomoda".to_string() ||
-      classe == b"rojin".to_string() ||
-      classe == b"yajin".to_string() ||
-      classe == b"tokei".to_string() ||
-      classe == b"asobi".to_string() ||
-      classe == b"tsuba".to_string() ||
-      classe == b"senshi".to_string() ||
-      classe == b"yogan".to_string() ||
-      classe == b"mori".to_string() ||
-      classe == b"ikari".to_string() ||
-      classe == b"shusen".to_string(),
-      EInvalidClasse
-    );
-  }
+public fun new(
+  kiosk: &mut Kiosk,
+  kiosk_owner_cap: &KioskOwnerCap,
+  name_registry: &mut NameRegistry,
+  policy: &TransferPolicy<Character>,
+  raw_name: String,
+  classe: String,
+  male: bool,
+  color_1: u32,
+  color_2: u32,
+  color_3: u32,
+  version: &Version,
+  ctx: &mut TxContext,
+): ID {
+  verify_classe(classe);
+  version.assert_latest();
+
+  let character_id = object::new(ctx);
+  let raw_character_id = character_id.to_inner();
+
+  assert!(color_1 >= MIN_COLOR_VALUE && color_1 <= MAX_COLOR_VALUE, EInvalidColor);
+
+  let name = raw_name.to_ascii().to_lowercase().to_string();
+  let sex = if (male) b"male".to_string() else b"female".to_string();
+
+  name_registry.add_name(name, ctx);
+
+  let character = Character {
+    id: character_id,
+    name,
+    position: b"{\"x\":0,\"y\":0,\"z\":0}".to_string(),
+    realm: b"overworld".to_string(),
+    experience: 0,
+    classe,
+    sex,
+    health: 30,
+    soul: 100,
+    inventory: vec_map::empty(),
+    color_1,
+    color_2,
+    color_3,
+    vitality: 0,
+    wisdom: 0,
+    strength: 0,
+    intelligence: 0,
+    chance: 0,
+    agility: 0,
+    available_points: 0,
+  };
+
+  kiosk.lock<Character>(kiosk_owner_cap, policy, character);
+
+  events::emit_character_create_event(
+    raw_character_id,
+    object::id(kiosk),
+  );
+
+  raw_character_id
+}
+
+// ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
+
+public(package) fun add_field<Key: copy + drop + store, Value: store>(
+  self: &mut Character,
+  key: Key,
+  value: Value,
+) {
+  dfield::add(&mut self.id, key, value);
+}
+
+public(package) fun has_field<Key: copy + drop + store>(self: &Character, key: Key): bool {
+  dfield::exists_(&self.id, key)
+}
+
+public(package) fun borrow_field_mut<Key: copy + drop + store, Value: store>(
+  self: &mut Character,
+  key: Key,
+): &mut Value {
+  dfield::borrow_mut<Key, Value>(&mut self.id, key)
+}
+
+public(package) fun borrow_inventory_mut(self: &mut Character): &mut VecMap<String, ID> {
+  &mut self.inventory
+}
+
+public(package) fun id(self: &Character): ID {
+  self.id.to_inner()
+}
+
+public(package) fun uid_mut(self: &mut Character): &mut UID {
+  &mut self.id
+}
+
+// ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
+
+fun verify_classe(classe: String) {
+  assert!(
+    classe == b"shugo".to_string() ||
+    classe == b"tomoda".to_string() ||
+    classe == b"rojin".to_string() ||
+    classe == b"yajin".to_string() ||
+    classe == b"tokei".to_string() ||
+    classe == b"asobi".to_string() ||
+    classe == b"tsuba".to_string() ||
+    classe == b"senshi".to_string() ||
+    classe == b"yogan".to_string() ||
+    classe == b"mori".to_string() ||
+    classe == b"ikari".to_string() ||
+    classe == b"shusen".to_string(),
+    EInvalidClasse,
+  );
 }

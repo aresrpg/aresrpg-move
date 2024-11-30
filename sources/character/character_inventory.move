@@ -1,105 +1,93 @@
-module aresrpg::character_inventory {
+module aresrpg::character_inventory;
 
-  // This module manages the inventory of a character
-  // It allows to equip and unequip items.
+use aresrpg::{
+  auth::AuthKey,
+  character::Character,
+  events,
+  protected_policy::{AresRPG_TransferPolicy, extract_from_kiosk},
+  version::Version
+};
+use std::string::String;
+use sui::{kiosk::{Kiosk, KioskOwnerCap}, transfer::Receiving, transfer_policy::TransferPolicy};
 
-  use std::{
-    string::String,
-  };
+// ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
-  use sui::{
-    kiosk::{PurchaseCap, Kiosk, KioskOwnerCap},
-  };
+const EInvalidSlot: u64 = 101;
+const EInvalidItem: u64 = 102;
 
-  use aresrpg::{
-    version::Version,
-    extension,
-    events
-  };
+// ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 
-  // ╔════════════════ [ Constant ] ═════════════════════════════════════════ ]
+public fun equip_item<T: key + store>(
+  _auth: &AuthKey,
+  kiosk: &mut Kiosk,
+  kiosk_cap: &KioskOwnerCap,
+  character: &mut Character,
+  slot: String,
+  item_id: ID,
+  protected_policy: &AresRPG_TransferPolicy<T>,
+  version: &Version,
+  ctx: &mut TxContext,
+) {
+  version.assert_latest();
+  verify_slot(slot);
 
-  const EInvalidSlot: u64 = 101;
+  let item = protected_policy.extract_from_kiosk(
+    kiosk,
+    kiosk_cap,
+    item_id,
+    ctx,
+  );
 
-  // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
+  events::emit_item_equip_event(
+    object::id(character),
+    slot,
+    object::id(kiosk),
+    object::id(&item),
+  );
 
-  public struct SlotKey has copy, drop, store {
-    slot: String,
-  }
+  let inventory = character.borrow_inventory_mut();
 
-  // ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
+  inventory.insert(slot, item_id);
+  transfer::public_transfer(item, character.id().to_address());
+}
 
-  /// Equip an item onto a character, users must select the character first.
-  /// Only a purchasecap of the item can be equipped to avoid creating a protected policy.
-  /// The purchasecap ensure the NFT stays in the kiosk and is not mutated or transfered
-  /// To unselect a character, the user must unequip all items.
-  public fun equip_item<T: key + store>(
-    kiosk: &mut Kiosk,
-    kiosk_cap: &KioskOwnerCap,
-    character_id: ID,
-    slot: String,
-    item: PurchaseCap<T>,
-    version: &Version,
-    ctx: &mut TxContext
-  ) {
-    version.assert_latest();
-    verify_slot(slot);
+// ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
 
-    events::emit_item_equip_event(
-      character_id,
-      slot,
-      object::id(kiosk),
-      item.purchase_cap_item(),
-    );
+public fun unequip_item<T: key + store>(
+  _auth: &AuthKey,
+  kiosk: &mut Kiosk,
+  kiosk_cap: &KioskOwnerCap,
+  character: &mut Character,
+  removed_item: Receiving<T>,
+  slot: String,
+  version: &Version,
+  policy: &TransferPolicy<T>,
+) {
+  version.assert_latest();
+  verify_slot(slot);
 
-    let character = extension::borrow_character_mut(
-      kiosk,
-      kiosk_cap,
-      character_id,
-      ctx
-    );
-    let inventory = character.borrow_inventory_mut();
+  let inventory = character.borrow_inventory_mut();
+  let (_, item_id) = inventory.remove<String, ID>(&slot);
 
-    inventory.add(SlotKey { slot }, item);
-  }
+  let item = transfer::public_receive(character.uid_mut(), removed_item);
 
-  /// Unequip an item from a selected character (in extension)
-  /// All items have to be unequipped before the character can be withdrawn
-  public fun unequip_item<T: key + store>(
-    kiosk: &mut Kiosk,
-    kiosk_cap: &KioskOwnerCap,
-    character_id: ID,
-    slot: String,
-    version: &Version,
-    ctx: &mut TxContext
-  ): PurchaseCap<T> {
-    version.assert_latest();
-    verify_slot(slot);
+  assert!(item_id == object::id(&item), EInvalidItem);
 
-    let character = extension::borrow_character_mut(
-      kiosk,
-      kiosk_cap,
-      character_id,
-      ctx
-    );
-    let inventory = character.borrow_inventory_mut();
-    let cap = inventory.remove<SlotKey, PurchaseCap<T>>(SlotKey { slot });
+  events::emit_item_unequip_event(
+    object::id(character),
+    slot,
+    object::id(kiosk),
+    object::id(&item),
+  );
 
-    events::emit_item_unequip_event(
-      character_id,
-      slot,
-      object::id(kiosk),
-      cap.purchase_cap_item(),
-    );
+  kiosk.lock(kiosk_cap, policy, item)
+}
 
-    cap
-  }
+// ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
 
-  // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
-
-  fun verify_slot(slot: String) {
-    assert!(
-      slot == b"hat".to_string() ||
+fun verify_slot(slot: String) {
+  assert!(
+    slot == b"hat".to_string() ||
       slot == b"amulet".to_string() ||
       slot == b"cloak".to_string() ||
       slot == b"left_ring".to_string() ||
@@ -115,7 +103,6 @@ module aresrpg::character_inventory {
       slot == b"relic_5".to_string() ||
       slot == b"relic_6".to_string() ||
       slot == b"title".to_string(),
-      EInvalidSlot
-    );
-  }
+    EInvalidSlot,
+  );
 }
