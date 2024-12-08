@@ -1,10 +1,6 @@
 module aresrpg::item;
 
-use aresrpg::{
-  events::emit_item_destroy_event,
-  item_damages::ItemDamages,
-  item_stats::ItemStatistics
-};
+use aresrpg::events::emit_item_destroy_event;
 use std::string::{utf8, String};
 use sui::{display, dynamic_field as dfield, package, tx_context::sender};
 

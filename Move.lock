@@ -2,13 +2,11 @@
 
 [move]
 version = 3
-manifest_digest = "169EE9C39609C6B999B056DC52DD0E1ACCB720359F619E8D1509EAAA270C4EF4"
-deps_digest = "F9B494B64F0615AED0E98FC12A85B85ECD2BC5185C22D30E7F67786BB52E507C"
+manifest_digest = "5BF866BB4F0154894A30A4FAB51DE9CF9C74D82A710147AE842B736DED5C65B2"
+deps_digest = "3C4103934B1E040BB6B23F1D610B4EF9F2F1166A50A104EADCF77467C004C600"
 dependencies = [
   { id = "Kiosk", name = "Kiosk" },
   { id = "Sui", name = "Sui" },
-  { id = "suifrens", name = "suifrens" },
-  { id = "vaporeon-nft", name = "vaporeon-nft" },
 ]
 
 [[move.package]]
@@ -29,22 +27,6 @@ source = { git = "https://github.com/MystenLabs/sui.git", rev = "framework/mainn
 
 dependencies = [
   { id = "MoveStdlib", name = "MoveStdlib" },
-]
-
-[[move.package]]
-id = "suifrens"
-source = { git = "https://github.com/MystenLabs/apps.git", rev = "testnet", subdir = "suifrens/suifrens" }
-
-dependencies = [
-  { id = "Sui", name = "Sui" },
-]
-
-[[move.package]]
-id = "vaporeon-nft"
-source = { git = "https://github.com/Sceat/vaporeon-nft.git", rev = "testnet", subdir = "" }
-
-dependencies = [
-  { id = "Sui", name = "Sui" },
 ]
 
 [move.toolchain-version]

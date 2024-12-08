@@ -1,27 +1,20 @@
 module aresrpg::item_api;
 
 use aresrpg::{
-  auth::{Self, AuthKey},
+  auth::AuthKey,
   events,
   item::{Self, Item},
   item_damages::{ItemDamages, augment_with_damages},
-  item_feed::feed_pet,
   item_stats::{ItemStatistics, augment_with_stats},
   protected_policy::AresRPG_TransferPolicy,
   version::Version
 };
-use std::{string::{String, utf8}, type_name};
-use sui::{
-  clock::Clock,
-  coin::Coin,
-  kiosk::{Kiosk, KioskOwnerCap},
-  sui::SUI,
-  transfer_policy::TransferPolicy
-};
+use std::string::String;
+use sui::{kiosk::{Kiosk, KioskOwnerCap}, transfer_policy::TransferPolicy};
 
 // ╔════════════════ [ Protected ] ═══════════════════════════════ ]
 
-public fun new_item(
+public fun new(
   _auth: &AuthKey,
   kiosk: &mut Kiosk,
   kiosk_cap: &KioskOwnerCap,
@@ -34,10 +27,10 @@ public fun new_item(
   amount: u32,
   stackable: bool,
   stats: Option<ItemStatistics>,
-  damages: Option<vector<ItemDamages>>,
+  damages: vector<ItemDamages>,
   version: &Version,
   ctx: &mut TxContext,
-): ID {
+) {
   version.assert_latest();
 
   let mut minted_item = item::new(
@@ -57,8 +50,8 @@ public fun new_item(
     augment_with_stats(&mut minted_item, stats.destroy_some());
   };
 
-  if (damages.is_some()) {
-    augment_with_damages(&mut minted_item, damages.destroy_some());
+  if (!damages.is_empty()) {
+    augment_with_damages(&mut minted_item, damages);
   };
 
   kiosk.lock(kiosk_cap, policy, minted_item);
@@ -67,11 +60,9 @@ public fun new_item(
     item_id,
     object::id(kiosk),
   );
-
-  item_id
 }
 
-public fun destroy_item(
+public fun destroy(
   _auth: &AuthKey,
   kiosk: &mut Kiosk,
   kiosk_cap: &KioskOwnerCap,
@@ -92,7 +83,7 @@ public fun destroy_item(
   item.destroy();
 }
 
-public fun merge_items(
+public fun merge(
   _auth: &AuthKey,
   kiosk: &mut Kiosk,
   kiosk_cap: &KioskOwnerCap,
@@ -126,7 +117,7 @@ public fun merge_items(
 
 // ╔════════════════ [ Public ] ════════════════════════════════════════════════ ]
 
-public fun split_item(
+public fun split(
   kiosk: &mut Kiosk,
   kiosk_cap: &KioskOwnerCap,
   policy: &TransferPolicy<Item>,

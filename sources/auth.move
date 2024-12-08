@@ -10,6 +10,13 @@ public struct AuthKey has key, store {
   id: UID,
 }
 
+// ╔════════════════ [ Public ] ═══════════════════════════════════════════════ ]
+
+public fun destroy(auth: AuthKey) {
+  let AuthKey { id } = auth;
+  object::delete(id);
+}
+
 // ╔════════════════ [ Admin ] ═══════════════════════════════════════════════ ]
 
 /// The aresrpg gas-station will own a bunch of authKeys to sponsor players
@@ -43,11 +50,4 @@ public fun unsecure_temporary_hack(ctx: &mut TxContext): AuthKey {
   AuthKey {
     id: object::new(ctx),
   }
-}
-
-/// To avoid complicating things, waiting for the multi-agent support
-/// we will simply mint and destroy that key on each transaction
-public fun unsecure_destroy_authkey(auth: AuthKey) {
-  let AuthKey { id } = auth;
-  object::delete(id);
 }

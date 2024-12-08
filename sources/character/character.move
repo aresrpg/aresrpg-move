@@ -93,7 +93,7 @@ fun init(otw: CHARACTER, ctx: &mut TxContext) {
 
 // ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 
-/// Update character fields including stats, only verify if values provided
+/// Update character fields including stats
 public fun update_character(
   _auth: &AuthKey,
   self: &mut Character,
@@ -217,7 +217,7 @@ public fun new(
   color_3: u32,
   version: &Version,
   ctx: &mut TxContext,
-): ID {
+) {
   verify_classe(classe);
   version.assert_latest();
 
@@ -260,8 +260,6 @@ public fun new(
     raw_character_id,
     object::id(kiosk),
   );
-
-  raw_character_id
 }
 
 // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]

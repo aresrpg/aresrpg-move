@@ -47,13 +47,13 @@ public fun length(self: &NameRegistry): u64 {
   self.registry.length()
 }
 
-/// This is used by the client in a dry run transaction to be more efficient
-/// than querying the entire registry to read its content.
-public fun assert_name_available(self: &NameRegistry, name: String) {
+// ╔════════════════ [ Private ] ════════════════════════════════════════════ ]
+
+fun assert_name_available(self: &NameRegistry, name: String) {
   assert!(!self.registry.contains(name), ENameTaken);
 }
 
-public fun assert_name_valid(name: String) {
+fun assert_name_valid(name: String) {
   assert!(string::length(&name) > 3 && string::length(&name) < 20, ENameInvalid);
   assert!(!contains_whitespace(name), ENameInvalid);
 }

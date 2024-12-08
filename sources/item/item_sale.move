@@ -7,11 +7,10 @@ use aresrpg::{
   item_recipe::{ItemTemplate, item_from_template},
   version::Version
 };
-use kiosk::personal_kiosk::PersonalKioskCap;
 use sui::{
   balance::{Balance, zero},
   coin::Coin,
-  kiosk::Kiosk,
+  kiosk::{Kiosk, KioskOwnerCap},
   random::Random,
   sui::SUI,
   transfer_policy::TransferPolicy
@@ -45,7 +44,7 @@ entry fun buy_item(
   coin: Coin<SUI>,
   random: &Random,
   kiosk: &mut Kiosk,
-  personal_kiosk_cap: &mut PersonalKioskCap,
+  kiosk_cap: &KioskOwnerCap,
   policy: &TransferPolicy<Item>,
   version: &Version,
   ctx: &mut TxContext,
@@ -69,8 +68,6 @@ entry fun buy_item(
     object::id(&item),
     object::id(kiosk),
   );
-
-  let kiosk_cap = personal_kiosk_cap.borrow_mut();
 
   kiosk.lock(kiosk_cap, policy, item);
 }

@@ -9,7 +9,6 @@ use aresrpg::{
   protected_policy::AresRPG_TransferPolicy,
   version::Version
 };
-use kiosk::personal_kiosk::PersonalKioskCap;
 use std::{string::{substring, String}, type_name};
 use sui::{
   coin::Coin,
@@ -180,7 +179,7 @@ entry fun craft_item(
   craft: FinishedCraft,
   random: &Random,
   kiosk: &mut Kiosk,
-  personal_kiosk_cap: &mut PersonalKioskCap,
+  kiosk_cap: &KioskOwnerCap,
   policy: &TransferPolicy<Item>,
   version: &Version,
   ctx: &mut TxContext,
@@ -209,8 +208,6 @@ entry fun craft_item(
     object::id(&crafted_item),
     object::id(kiosk),
   );
-
-  let kiosk_cap = personal_kiosk_cap.borrow_mut();
 
   kiosk.lock(kiosk_cap, policy, crafted_item);
 }
