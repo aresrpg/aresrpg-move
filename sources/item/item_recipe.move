@@ -1,40 +1,35 @@
 module aresrpg::item_recipe;
 
 use aresrpg::{
-  admin::AdminCap,
+  auth::AuthKey,
   events,
   item::{Self, Item},
   item_damages::{Self, ItemDamages},
   item_stats::{Self, ItemStatistics},
-  protected_policy::AresRPG_TransferPolicy,
   version::Version
 };
-use std::{string::{substring, String}, type_name};
+use std::string::String;
 use sui::{
-  coin::Coin,
   kiosk::{Kiosk, KioskOwnerCap},
   random::{Random, new_generator},
-  transfer_policy::TransferPolicy,
-  tx_context::sender
+  transfer_policy::TransferPolicy
 };
 
-// TODO: Remove this module once the multi-agents transaction is available
-// TODO: We will instead only allow players to craft through other player's jobs
-
-// ╔════════════════ [ Constants ] ════════════════════════════════════════════ ]
-
-const EWrongRecipe: u64 = 101;
-const ERecipeIncomplete: u64 = 102;
-const EWrongIngredient: u64 = 103;
+/// This module allows using specific items to generate new ones through Sui's randomness
 
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
-/// an ingredient contains the type of an item or a token, and can be used to craft
-public struct Ingredient has store, copy, drop {
-  // could be an aresrpg item type, or a real token type T
-  item_type: String,
-  name: String,
-  amount: u64,
+/// This object is obtained when using a item of type recipe_scroll
+/// It stays on the address, indicating the user is able to craft the item
+public struct Recipe has key {
+  id: UID,
+  recipe_type: String,
+}
+
+/// This object is obtained when crafting an item, it is used to "reveal" the item
+public struct FinishedCraft has key {
+  id: UID,
+  template: ItemTemplate,
 }
 
 /// Template to mint an item randomly with stats and damages
@@ -49,133 +44,10 @@ public struct ItemTemplate has store, drop {
   damages: vector<ItemDamages>,
 }
 
-/// Shared object representing a recipe to craft an item
-public struct Recipe has key, store {
-  id: UID,
-  level: u8,
-  ingredients: vector<Ingredient>,
-  template: ItemTemplate,
-}
-
-/// hot potato to follow the process of crafting an item
-/// all ingredients must be consumed
-public struct Craft {
-  recipe_id: ID,
-  ingredients: vector<Ingredient>,
-}
-
-// finished craft object which can be minted as an item with random stats
-// according to the recipe template
-// this is required as randomness transactions must be an entry and can't use the potato
-public struct FinishedCraft has key {
-  id: UID,
-  recipe_id: ID,
-}
-
-// ╔════════════════ [ Public ] ════════════════════════════════════════════ ]
-
-/// Start the crafting process by issuing a hot potato from a recipe
-public fun start_craft(recipe: &Recipe, version: &Version): Craft {
-  version.assert_latest();
-
-  Craft {
-    recipe_id: recipe.id.uid_to_inner(),
-    ingredients: recipe.ingredients,
-  }
-}
-
-// No need to check version since this is always a following of the start_craft
-/// Consume a token ingredient
-public fun use_token_ingredient<T>(coin: Coin<T>, craft: &mut Craft) {
-  let mut i = 0;
-  let mut used = false;
-
-  while (i < craft.ingredients.length()) {
-    let ingredient = craft.ingredients[i];
-    let parsed_type = substring(
-      &ingredient.item_type,
-      2,
-      ingredient.item_type.length(),
-    );
-
-    if (type_name::get<T>().into_string() == parsed_type.to_ascii()) {
-      assert!(coin.value() == ingredient.amount, EWrongIngredient);
-      craft.ingredients.remove(i);
-      used = true;
-      break
-    };
-
-    i = i + 1
-  };
-
-  assert!(used, EWrongIngredient);
-
-  transfer::public_transfer(coin, @0x0);
-}
-
-// No need to check version since this is always a following of the start_craft
-/// Consume an aresrpg item ingredient
-public fun use_item_ingredient(
-  kiosk: &mut Kiosk,
-  kiosk_cap: &KioskOwnerCap,
-  item_id: ID,
-  protected_policy: &AresRPG_TransferPolicy<Item>,
-  craft: &mut Craft,
-  ctx: &mut TxContext,
-) {
-  let item = protected_policy.extract_from_kiosk(
-    kiosk,
-    kiosk_cap,
-    item_id,
-    ctx,
-  );
-
-  let mut i = 0;
-  let mut used = false;
-
-  while (i < craft.ingredients.length()) {
-    let ingredient = craft.ingredients[i];
-
-    if (ingredient.item_type == item.item_type()) {
-      assert!(ingredient.amount == item.amount() as u64, EWrongIngredient);
-      used = true;
-      craft.ingredients.remove(i);
-      break
-    };
-
-    i = i + 1;
-  };
-
-  assert!(used, EWrongIngredient);
-
-  item.destroy();
-}
-
-/// Retrieve a proof of craft completion to be used in the final step
-/// when all ingredients have been used.
-/// Consume the craft hot potato
-public fun prove_all_ingredients_used(craft: Craft, ctx: &mut TxContext) {
-  let Craft {
-    recipe_id,
-    ingredients,
-  } = craft;
-
-  assert!(ingredients.length() == 0, ERecipeIncomplete);
-
-  let finished = FinishedCraft {
-    id: object::new(ctx),
-    recipe_id,
-  };
-
-  events::emit_finished_craft_event(object::id(&finished), recipe_id);
-
-  transfer::transfer(finished, sender(ctx));
-}
+// ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 
 /// Craft the item from the finished craft proof
-/// Randomly generate stats according to the recipe template
 entry fun craft_item(
-  recipe: &Recipe,
   craft: FinishedCraft,
   random: &Random,
   kiosk: &mut Kiosk,
@@ -188,17 +60,15 @@ entry fun craft_item(
 
   let FinishedCraft {
     id,
-    recipe_id,
+    template,
   } = craft;
 
   events::emit_item_destroy_event(id.to_inner());
 
   id.delete();
 
-  assert!(recipe_id == recipe.id.uid_as_inner(), EWrongRecipe);
-
   let crafted_item = item_from_template(
-    &recipe.template,
+    &template,
     1, // we craft one by one, why do you want to craft faster anyway? it's not like you have anything else to do
     random,
     ctx,
@@ -212,84 +82,24 @@ entry fun craft_item(
   kiosk.lock(kiosk_cap, policy, crafted_item);
 }
 
-// ╔════════════════ [ Admin ] ════════════════════════════════════════════ ]
-
-public fun admin_create_recipe(
-  admin: &AdminCap,
-  level: u8,
-  ingredients: vector<Ingredient>,
-  template: ItemTemplate,
-  ctx: &mut TxContext,
-) {
-  admin.verify(ctx);
-
-  let id = object::new(ctx);
-
-  events::emit_recipe_create_event(id.uid_to_inner());
-
-  transfer::share_object(Recipe {
-    id,
-    level,
-    ingredients,
-    template,
-  });
+public fun create_recipe(_auth: &AuthKey, recipe_type: String, ctx: &mut TxContext) {
+  transfer::transfer(
+    Recipe {
+      id: object::new(ctx),
+      recipe_type,
+    },
+    ctx.sender(),
+  )
 }
 
-public fun admin_delete_recipe(admin: &AdminCap, recipe: Recipe, ctx: &mut TxContext) {
-  admin.verify(ctx);
-
-  let Recipe {
-    id,
-    level: _,
-    ingredients: _,
-    template: _,
-  } = recipe;
-
-  events::emit_recipe_delete_event(id.uid_to_inner());
-
-  object::delete(id);
-}
-
-public fun admin_create_ingredient(
-  admin: &AdminCap,
-  item_type: String,
-  amount: u64,
-  name: String,
-  ctx: &mut TxContext,
-): Ingredient {
-  admin.verify(ctx);
-
-  Ingredient {
-    item_type,
-    amount,
-    name,
-  }
-}
-
-public fun admin_create_template(
-  admin: &AdminCap,
-  name: String,
-  item_category: String,
-  item_set: String,
-  item_type: String,
-  level: u8,
-  stats_min: ItemStatistics,
-  stats_max: ItemStatistics,
-  damages: vector<ItemDamages>,
-  ctx: &mut TxContext,
-): ItemTemplate {
-  admin.verify(ctx);
-
-  ItemTemplate {
-    name,
-    item_category,
-    item_set,
-    item_type,
-    level,
-    stats_min,
-    stats_max,
-    damages,
-  }
+public fun create_finished_craft(_auth: &AuthKey, template: ItemTemplate, ctx: &mut TxContext) {
+  transfer::transfer(
+    FinishedCraft {
+      id: object::new(ctx),
+      template,
+    },
+    ctx.sender(),
+  )
 }
 
 // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]

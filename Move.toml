@@ -1,7 +1,7 @@
 [package]
 name = "aresrpg"
 version = "0.1.0"
-published-at = "0x1b24703923fdbab6305ab3d0a301b388d932f5f4cd4f48f71fcf83cd5a2a5805"
+published-at = "0xbe3a7cf61874e8bb3410be5b99d35d6782a5a814e27d865492a021eb7576be15"
 edition = "2024.beta"
 
 authors = ["Sceat (fetch@sceat.xyz)"]
@@ -11,11 +11,6 @@ git = "https://github.com/MystenLabs/sui.git"
 subdir = "crates/sui-framework/packages/sui-framework"
 rev = "framework/mainnet"
 override = true
-
-[dependencies.Kiosk]
-git = "https://github.com/MystenLabs/apps.git"
-subdir = "kiosk"
-rev = "testnet"
 
 [addresses]
 aresrpg = "0x0"
