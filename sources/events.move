@@ -47,16 +47,8 @@ public struct PetFeedEvent has copy, drop {
   pet_id: ID,
 }
 
-public struct RecipeCreateEvent has copy, drop {
-  recipe_id: ID,
-}
-
 public struct SaleCreateEvent has copy, drop {
   sale_id: ID,
-}
-
-public struct RecipeDeleteEvent has copy, drop {
-  recipe_id: ID,
 }
 
 public struct SaleDeleteEvent has copy, drop {
@@ -75,11 +67,6 @@ public struct ItemSplitEvent has copy, drop {
   kiosk_id: ID,
   new_item_id: ID,
   amount: u32,
-}
-
-public struct FinishedCraftEvent has copy, drop {
-  id: ID,
-  recipe_id: ID,
 }
 
 // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
@@ -150,18 +137,6 @@ public(package) fun emit_admin_cap_delete_event(cap_id: ID) {
   });
 }
 
-public(package) fun emit_recipe_create_event(recipe_id: ID) {
-  emit(RecipeCreateEvent {
-    recipe_id,
-  });
-}
-
-public(package) fun emit_recipe_delete_event(recipe_id: ID) {
-  emit(RecipeDeleteEvent {
-    recipe_id,
-  });
-}
-
 public(package) fun emit_sale_create_event(sale_id: ID) {
   emit(SaleCreateEvent {
     sale_id,
@@ -194,12 +169,5 @@ public(package) fun emit_item_split_event(item_id: ID, kiosk_id: ID, new_item_id
     kiosk_id,
     new_item_id,
     amount,
-  });
-}
-
-public(package) fun emit_finished_craft_event(id: ID, recipe_id: ID) {
-  emit(FinishedCraftEvent {
-    id,
-    recipe_id,
   });
 }

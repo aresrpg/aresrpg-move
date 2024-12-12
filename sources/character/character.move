@@ -24,6 +24,7 @@ const EInventoryNotEmpty: u64 = 101;
 const EExperienceTooLow: u64 = 102;
 const EInvalidClasse: u64 = 103;
 const EInvalidColor: u64 = 104;
+const EInvalidUpdate: u64 = 105;
 
 const MIN_COLOR_VALUE: u32 = 0;
 const MAX_COLOR_VALUE: u32 = 16777215; // Equivalent to 0xFFFFFF
@@ -98,30 +99,46 @@ public fun update_character(
   _auth: &AuthKey,
   self: &mut Character,
   position: Option<String>,
+  last_position: String,
   realm: Option<String>,
+  last_realm: String,
   experience: Option<u32>,
+  last_experience: u32,
   health: Option<u16>,
   soul: Option<u8>,
   vitality: Option<u16>,
+  last_vitality: u16,
   wisdom: Option<u16>,
+  last_wisdom: u16,
   strength: Option<u16>,
+  last_strength: u16,
   intelligence: Option<u16>,
+  last_intelligence: u16,
   chance: Option<u16>,
+  last_chance: u16,
   agility: Option<u16>,
+  last_agility: u16,
   available_points: Option<u16>,
+  last_available_points: u16,
   version: &Version,
 ) {
   version.assert_latest();
 
+  // For each field we want to update
+  // We check that the server was up to date with the last value
+
   if (position.is_some()) {
+    assert!(self.position == last_position, EInvalidUpdate);
     self.position = position.destroy_some();
   };
 
   if (realm.is_some()) {
+    assert!(self.realm == last_realm, EInvalidUpdate);
     self.realm = realm.destroy_some();
   };
 
   if (experience.is_some()) {
+    assert!(self.experience == last_experience, EInvalidUpdate);
     let experience = experience.destroy_some();
     assert!(experience > self.experience, EExperienceTooLow);
     self.experience = experience;
@@ -136,30 +153,37 @@ public fun update_character(
   };
 
   if (vitality.is_some()) {
+    assert!(self.vitality == last_vitality, EInvalidUpdate);
     self.vitality = vitality.destroy_some();
   };
 
   if (wisdom.is_some()) {
+    assert!(self.wisdom == last_wisdom, EInvalidUpdate);
     self.wisdom = wisdom.destroy_some();
   };
 
   if (strength.is_some()) {
+    assert!(self.strength == last_strength, EInvalidUpdate);
     self.strength = strength.destroy_some();
   };
 
   if (intelligence.is_some()) {
+    assert!(self.intelligence == last_intelligence, EInvalidUpdate);
     self.intelligence = intelligence.destroy_some();
   };
 
   if (chance.is_some()) {
+    assert!(self.chance == last_chance, EInvalidUpdate);
     self.chance = chance.destroy_some();
   };
 
   if (agility.is_some()) {
+    assert!(self.agility == last_agility, EInvalidUpdate);
     self.agility = agility.destroy_some();
   };
 
   if (available_points.is_some()) {
+    assert!(self.available_points == last_available_points, EInvalidUpdate);
     self.available_points = available_points.destroy_some();
   };
 }
