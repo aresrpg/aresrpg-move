@@ -82,6 +82,29 @@ entry fun craft_item(
   kiosk.lock(kiosk_cap, policy, crafted_item);
 }
 
+public fun create_template(
+  _auth: &AuthKey,
+  name: String,
+  item_category: String,
+  item_set: String,
+  item_type: String,
+  level: u8,
+  stats_min: ItemStatistics,
+  stats_max: ItemStatistics,
+  damages: vector<ItemDamages>,
+): ItemTemplate {
+  ItemTemplate {
+    name,
+    item_category,
+    item_set,
+    item_type,
+    level,
+    stats_min,
+    stats_max,
+    damages,
+  }
+}
+
 public fun create_recipe(_auth: &AuthKey, recipe_type: String, ctx: &mut TxContext) {
   transfer::transfer(
     Recipe {

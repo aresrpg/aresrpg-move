@@ -26,6 +26,10 @@ public struct ItemMintEvent has copy, drop {
   kiosk_id: ID,
 }
 
+public struct ItemUpdateEvent has copy, drop {
+  item_id: ID,
+}
+
 public struct ItemDestroyEvent has copy, drop {
   item_id: ID,
 }
@@ -37,6 +41,10 @@ public struct AdminCapDeleteEvent has copy, drop {
 public struct CharacterCreateEvent has copy, drop {
   character_id: ID,
   kiosk_id: ID,
+}
+
+public struct CharacterUpdateEvent has copy, drop {
+  character_id: ID,
 }
 
 public struct CharacterDeleteEvent has copy, drop {
@@ -169,5 +177,17 @@ public(package) fun emit_item_split_event(item_id: ID, kiosk_id: ID, new_item_id
     kiosk_id,
     new_item_id,
     amount,
+  });
+}
+
+public(package) fun emit_item_update_event(item_id: ID) {
+  emit(ItemUpdateEvent {
+    item_id,
+  });
+}
+
+public(package) fun emit_character_update_event(character_id: ID) {
+  emit(CharacterUpdateEvent {
+    character_id,
   });
 }

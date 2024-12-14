@@ -1,6 +1,6 @@
 module aresrpg::item_stats;
 
-use aresrpg::item::Item;
+use aresrpg::{auth::AuthKey, item::Item};
 
 // This module is responsible for managing the statistics of an item
 
@@ -33,6 +33,50 @@ public struct ItemStatistics has store, copy, drop {
 }
 
 public struct StatsKey has copy, drop, store {}
+
+// ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
+
+// The server needs to also be able to create those, for example when creating a new item
+public fun protected_new(
+  _auth: &AuthKey,
+  vitality: u16,
+  wisdom: u16,
+  strength: u16,
+  intelligence: u16,
+  chance: u16,
+  agility: u16,
+  range: u16,
+  movement: u16,
+  action: u16,
+  critical: u16,
+  raw_damage: u16,
+  critical_chance: u16,
+  critical_outcomes: u16,
+  earth_resistance: u16,
+  fire_resistance: u16,
+  water_resistance: u16,
+  air_resistance: u16,
+): ItemStatistics {
+  ItemStatistics {
+    vitality,
+    wisdom,
+    strength,
+    intelligence,
+    chance,
+    agility,
+    range,
+    movement,
+    action,
+    critical,
+    raw_damage,
+    critical_chance,
+    critical_outcomes,
+    earth_resistance,
+    fire_resistance,
+    water_resistance,
+    air_resistance,
+  }
+}
 
 // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
 

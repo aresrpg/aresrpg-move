@@ -186,6 +186,8 @@ public fun update_character(
     assert!(self.available_points == last_available_points, EInvalidUpdate);
     self.available_points = available_points.destroy_some();
   };
+
+  events::emit_character_update_event(self.id());
 }
 
 /// We use the protected policy to freely access the character and delete it.
@@ -317,6 +319,10 @@ public(package) fun id(self: &Character): ID {
 
 public(package) fun uid_mut(self: &mut Character): &mut UID {
   &mut self.id
+}
+
+public(package) fun add_experience(self: &mut Character, experience: u32) {
+  self.experience = self.experience + experience;
 }
 
 // ╔════════════════ [ Private ] ════════════════════════════════════════════ ]

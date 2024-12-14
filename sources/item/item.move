@@ -114,6 +114,11 @@ public(package) fun new(
   }
 }
 
+public(package) fun set_amount(self: &mut Item, amount: u32) {
+  self.amount = amount;
+  
+}
+
 /// Some items like simple wood (to make sturdy sui tables) can be stacked
 /// to avoid minting thousands of objects.
 public(package) fun split(self: &mut Item, amount: u32, ctx: &mut TxContext): Item {
