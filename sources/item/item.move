@@ -115,8 +115,8 @@ public(package) fun new(
 }
 
 public(package) fun set_amount(self: &mut Item, amount: u32) {
+  assert!(amount >= 1, EWrongAmount);
   self.amount = amount;
-  
 }
 
 /// Some items like simple wood (to make sturdy sui tables) can be stacked
