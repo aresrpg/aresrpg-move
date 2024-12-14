@@ -2,7 +2,6 @@ module aresrpg::item_api;
 
 use aresrpg::{
   auth::AuthKey,
-  character::Character,
   events,
   item::{Self, Item},
   item_damages::{ItemDamages, augment_with_damages},
@@ -11,11 +10,7 @@ use aresrpg::{
   version::Version
 };
 use std::string::String;
-use sui::{
-  kiosk::{Kiosk, KioskOwnerCap},
-  random::{Random, new_generator},
-  transfer_policy::TransferPolicy
-};
+use sui::{kiosk::{Kiosk, KioskOwnerCap}, transfer_policy::TransferPolicy};
 
 // ╔════════════════ [ Constant ] ═══════════════════════════════ ]
 
@@ -138,45 +133,6 @@ public fun merge(
   );
 
   target_item.merge(item);
-}
-
-/// Add experience to a character by consuming an item.
-entry fun use_item_add_xp(
-  _auth: &AuthKey,
-  item_id: ID,
-  character_id: ID,
-  kiosk: &mut Kiosk,
-  kiosk_cap: &KioskOwnerCap,
-  protected_policy: &AresRPG_TransferPolicy<Item>,
-  random: &Random,
-  min_xp: u32,
-  max_xp: u32,
-  version: &Version,
-  ctx: &mut TxContext,
-) {
-  version.assert_latest();
-
-  let item = protected_policy.extract_from_kiosk(
-    kiosk,
-    kiosk_cap,
-    item_id,
-    ctx,
-  );
-
-  let mut amount = item.amount();
-
-  let character = kiosk.borrow_mut<Character>(kiosk_cap, character_id);
-  let mut generator = new_generator(random, ctx);
-
-  loop {
-    if (amount == 0) {
-      break
-    };
-    character.add_experience(generator.generate_u32_in_range(min_xp, max_xp));
-    amount = amount - 1;
-  };
-
-  item.destroy();
 }
 
 // ╔════════════════ [ Public ] ════════════════════════════════════════════════ ]

@@ -99,7 +99,6 @@ public fun update_character(
   _auth: &AuthKey,
   self: &mut Character,
   position: Option<String>,
-  last_position: String,
   realm: Option<String>,
   last_realm: String,
   experience: Option<u32>,
@@ -128,7 +127,6 @@ public fun update_character(
   // We check that the server was up to date with the last value
 
   if (position.is_some()) {
-    assert!(self.position == last_position, EInvalidUpdate);
     self.position = position.destroy_some();
   };
 
