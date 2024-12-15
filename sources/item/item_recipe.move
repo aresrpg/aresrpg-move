@@ -8,12 +8,9 @@ use aresrpg::{
   item_stats::{Self, ItemStatistics},
   version::Version
 };
+use kiosk::personal_kiosk::PersonalKioskCap;
 use std::string::String;
-use sui::{
-  kiosk::{Kiosk, KioskOwnerCap},
-  random::{Random, new_generator},
-  transfer_policy::TransferPolicy
-};
+use sui::{kiosk::Kiosk, random::{Random, new_generator}, transfer_policy::TransferPolicy};
 
 /// This module allows using specific items to generate new ones through Sui's randomness
 
@@ -51,7 +48,7 @@ entry fun craft_item(
   craft: FinishedCraft,
   random: &Random,
   kiosk: &mut Kiosk,
-  kiosk_cap: &KioskOwnerCap,
+  personal_kiosk_cap: &mut PersonalKioskCap,
   policy: &TransferPolicy<Item>,
   version: &Version,
   ctx: &mut TxContext,
@@ -78,6 +75,8 @@ entry fun craft_item(
     object::id(&crafted_item),
     object::id(kiosk),
   );
+
+  let kiosk_cap = personal_kiosk_cap.borrow_mut();
 
   kiosk.lock(kiosk_cap, policy, crafted_item);
 }

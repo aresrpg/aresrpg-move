@@ -2,7 +2,6 @@ import { keypair, NETWORK, sdk } from './client.js'
 import { Transaction } from '@mysten/sui/transactions'
 import { execSync } from 'child_process'
 import { find_types } from '../../aresrpg-sdk/src/types-parser.js'
-import { getFullnodeUrl, SuiClient } from '@mysten/sui/client'
 import { writeFileSync } from 'fs'
 
 const txb = new Transaction()
