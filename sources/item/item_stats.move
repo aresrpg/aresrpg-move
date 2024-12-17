@@ -8,6 +8,7 @@ use aresrpg::{auth::AuthKey, item::Item};
 
 /// The item is stackable, you can't add damages to it
 const EItemStackable: u64 = 101;
+const EInvalidUpdate: u64 = 102;
 
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
@@ -76,6 +77,23 @@ public fun protected_new(
     water_resistance,
     air_resistance,
   }
+}
+
+public fun update_stats(
+  _auth: &AuthKey,
+  item: &mut Item,
+  last_stats: &ItemStatistics,
+  stats: ItemStatistics,
+) {
+  if (!item.has_field(StatsKey {})) {
+    augment_with_stats(item, stats);
+  };
+
+  let current_stats = item.borrow_field_mut<StatsKey, ItemStatistics>(StatsKey {});
+
+  assert!(*current_stats == *last_stats, EInvalidUpdate);
+
+  *current_stats = stats;
 }
 
 // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]

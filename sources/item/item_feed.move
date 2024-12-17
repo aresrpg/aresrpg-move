@@ -10,7 +10,6 @@ use sui::{balance::{Self, Balance}, coin::{Self, Coin}, dynamic_object_field as 
 // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
 const EAlreadyFed: u64 = 101;
-const EInvalidFeedAmount: u64 = 102;
 const EMaxFeed: u64 = 103;
 
 // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
@@ -18,6 +17,7 @@ const EMaxFeed: u64 = 103;
 public struct FeedableAbility<phantom T> has key, store {
   id: UID,
   stomach: Balance<T>,
+  feed_percent: u8,
   last_feed: u64,
   pet_id: ID,
 }
@@ -26,12 +26,11 @@ public struct FeedKey has store, copy, drop {}
 
 // ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 
+/// Feed a pet and increase its feed_percent by 1. The coin can be empty if wanted
 public fun feed_pet<T>(
   _auth: &AuthKey,
   uid: &mut UID,
   food: Coin<T>,
-  feed_amount: u64,
-  feed_max: u64,
   version: &Version,
   ctx: &mut TxContext,
 ) {
@@ -47,6 +46,7 @@ public fun feed_pet<T>(
       FeedableAbility<T> {
         id: object::new(ctx),
         stomach: balance::zero(),
+        feed_percent: 0,
         last_feed: 0,
         pet_id,
       },
@@ -59,11 +59,9 @@ public fun feed_pet<T>(
   assert!(ctx.epoch() > feedable.last_feed, EAlreadyFed);
 
   feedable.last_feed = ctx.epoch();
+  feedable.feed_percent = feedable.feed_percent + 1;
 
-  // cost 1 sui to feed
-  assert!(food.value<T>() == feed_amount, EInvalidFeedAmount);
-  // the suifren can only eat 100 sui
-  assert!(feedable.stomach.value() <= feed_max, EMaxFeed);
+  assert!(feedable.feed_percent <= 100, EMaxFeed);
 
   coin::put(&mut feedable.stomach, food);
 }

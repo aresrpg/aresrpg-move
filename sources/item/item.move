@@ -1,6 +1,6 @@
 module aresrpg::item;
 
-use aresrpg::events::emit_item_destroy_event;
+use aresrpg::{auth::AuthKey, events::emit_item_destroy_event};
 use std::string::{utf8, String};
 use sui::{display, dynamic_field as dfield, package, tx_context::sender};
 
@@ -81,6 +81,12 @@ public fun stackable(self: &Item): bool {
 
 public fun item_type(self: &Item): String {
   self.item_type
+}
+
+// ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
+
+public fun uid_mut(self: &mut Item, _auth: &AuthKey): &mut UID {
+  &mut self.id
 }
 
 // ╔════════════════ [ Package ] ════════════════════════════════════════════ ]
