@@ -221,6 +221,9 @@ fun verify_category(category: String) {
       category == b"sword".to_string() ||
       category == b"fishingRod".to_string() ||
       category == b"pickaxe".to_string() ||
+      category == b"key".to_string() ||
+      category == b"resource".to_string() ||
+      category == b"pet".to_string() ||
       category == b"title".to_string(),
     EWrongCategory,
   );
