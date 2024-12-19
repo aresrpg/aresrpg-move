@@ -1,7 +1,9 @@
 module aresrpg::item_feed;
 
-use aresrpg::{auth::AuthKey, events, version::Version};
-use sui::{balance::{Self, Balance}, coin::{Self, Coin}, dynamic_object_field as dof};
+use aresrpg::{auth::AuthKey, events, item::Item, version::Version};
+use sui::{balance::{Self, Balance}, coin::{Self, Coin}, dynamic_object_field as dof, sui::SUI};
+use suifrens::suifrens::SuiFren;
+use vaporeon::vaporeon::Vaporeon;
 
 // this module manages the ability to "feed" or augment an item under specific conditions
 // it allows to feed Sui to a suifren for example,
@@ -10,6 +12,7 @@ use sui::{balance::{Self, Balance}, coin::{Self, Coin}, dynamic_object_field as 
 // ╔════════════════ [ Constant ] ════════════════════════════════════════════ ]
 
 const EAlreadyFed: u64 = 101;
+const ENotPet: u64 = 102;
 const EMaxFeed: u64 = 103;
 
 // ╔════════════════ [ Type ] ════════════════════════════════════════════ ]
@@ -64,4 +67,41 @@ public fun feed_pet<T>(
   assert!(feedable.feed_percent <= 100, EMaxFeed);
 
   coin::put(&mut feedable.stomach, food);
+}
+
+public fun feed_suifren<Fren>(
+  _auth: &AuthKey,
+  pet: &mut SuiFren<Fren>,
+  food: Coin<SUI>,
+  version: &Version,
+  ctx: &mut TxContext,
+) {
+  version.assert_latest();
+  let uid_mut = pet.uid_mut();
+  feed_pet(_auth, uid_mut, food, version, ctx);
+}
+
+public fun feed_vaporeon<T>(
+  _auth: &AuthKey,
+  pet: &mut Vaporeon,
+  food: Coin<T>,
+  version: &Version,
+  ctx: &mut TxContext,
+) {
+  version.assert_latest();
+  let uid_mut = pet.uid();
+  feed_pet(_auth, uid_mut, food, version, ctx);
+}
+
+public fun feed_aresrpg<T>(
+  _auth: &AuthKey,
+  pet: &mut Item,
+  food: Coin<T>,
+  version: &Version,
+  ctx: &mut TxContext,
+) {
+  version.assert_latest();
+
+  assert!(pet.item_category() == b"pet".to_string(), ENotPet);
+  feed_pet(_auth, pet.uid_mut(_auth), food, version, ctx);
 }

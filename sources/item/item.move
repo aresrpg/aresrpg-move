@@ -83,6 +83,10 @@ public fun item_type(self: &Item): String {
   self.item_type
 }
 
+public fun item_category(self: &Item): String {
+  self.item_category
+}
+
 // ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 
 public fun uid_mut(self: &mut Item, _auth: &AuthKey): &mut UID {
