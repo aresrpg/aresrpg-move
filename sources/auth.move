@@ -2,7 +2,7 @@ module aresrpg::auth;
 
 use aresrpg::admin::AdminCap;
 
-/// This module provides authorization objects used for server-only functions
+// This module provides authorization objects used for server-only functions
 
 // ╔════════════════ [ Types ] ═══════════════════════════════════════════════ ]
 

@@ -2,13 +2,15 @@ module aresrpg::character;
 
 use aresrpg::{
   auth::AuthKey,
-  character_registry::NameRegistry,
+  derived::AresRoot,
   events,
   protected_policy::AresRPG_TransferPolicy,
+  string::contains_whitespace,
   version::Version
 };
-use std::string::{utf8, String};
+use std::string::{Self as std_string, utf8, String};
 use sui::{
+  derived_object,
   display,
   dynamic_field as dfield,
   kiosk::{Kiosk, KioskOwnerCap},
@@ -25,6 +27,8 @@ const EExperienceTooLow: u64 = 102;
 const EInvalidClasse: u64 = 103;
 const EInvalidColor: u64 = 104;
 const EInvalidUpdate: u64 = 105;
+const ENameTaken: u64 = 106;
+const ENameInvalid: u64 = 107;
 
 const MIN_COLOR_VALUE: u32 = 0;
 const MAX_COLOR_VALUE: u32 = 16777215; // Equivalent to 0xFFFFFF
@@ -195,7 +199,6 @@ public fun delete(
   _auth: &AuthKey,
   kiosk: &mut Kiosk,
   kiosk_cap: &KioskOwnerCap,
-  name_registry: &mut NameRegistry,
   character_id: ID,
   policy: &AresRPG_TransferPolicy<Character>,
   version: &Version,
@@ -212,15 +215,12 @@ public fun delete(
 
   let Character {
     id,
-    name,
     inventory,
     ..,
   } = character;
 
   // prevent deletion of a character with items in inventory
   assert!(inventory.is_empty(), EInventoryNotEmpty);
-
-  name_registry.remove_name(name);
 
   object::delete(id);
   events::emit_character_delete_event(character_id);
@@ -231,7 +231,7 @@ public fun delete(
 public fun new(
   kiosk: &mut Kiosk,
   kiosk_owner_cap: &KioskOwnerCap,
-  name_registry: &mut NameRegistry,
+  root: &mut AresRoot,
   policy: &TransferPolicy<Character>,
   raw_name: String,
   classe: String,
@@ -240,20 +240,28 @@ public fun new(
   color_2: u32,
   color_3: u32,
   version: &Version,
-  ctx: &mut TxContext,
 ) {
   verify_classe(classe);
   version.assert_latest();
 
-  let character_id = object::new(ctx);
-  let raw_character_id = character_id.to_inner();
+  let name = raw_name.to_ascii().to_lowercase().to_string();
+  let mut key_name = copy name;
 
+  key_name.append(b"::character".to_string());
+
+  assert!(!derived_object::exists(root.uid(), name), ENameTaken);
+  assert!(std_string::length(&name) > 3 && std_string::length(&name) < 20, ENameInvalid);
+  assert!(!contains_whitespace(name), ENameInvalid);
   assert!(color_1 >= MIN_COLOR_VALUE && color_1 <= MAX_COLOR_VALUE, EInvalidColor);
 
-  let name = raw_name.to_ascii().to_lowercase().to_string();
-  let sex = if (male) b"male".to_string() else b"female".to_string();
+  let character_id = derived_object::claim(
+    root.uid(),
+    key_name,
+  );
 
-  name_registry.add_name(name, ctx);
+  let raw_character_id = character_id.to_inner();
+
+  let sex = if (male) b"male".to_string() else b"female".to_string();
 
   let character = Character {
     id: character_id,

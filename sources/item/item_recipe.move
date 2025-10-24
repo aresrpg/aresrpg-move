@@ -12,7 +12,7 @@ use kiosk::personal_kiosk::PersonalKioskCap;
 use std::string::String;
 use sui::{kiosk::Kiosk, random::{Random, new_generator}, transfer_policy::TransferPolicy};
 
-/// This module allows using specific items to generate new ones through Sui's randomness
+// This module allows using specific items to generate new ones through Sui's randomness
 
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
