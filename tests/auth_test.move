@@ -28,16 +28,3 @@ fun test_verifier_builder_pattern() {
   // If we got here without panic, builder pattern works!
   // Actual signature verification will be tested via E2E on devnet
 }
-
-#[test]
-fun test_authkey_creation() {
-  let mut scenario = test_scenario::begin(TEST_ADDRESS);
-
-  // Create an AuthKey (using the temporary unsecure method)
-  let auth_key = auth::unsecure_temporary_auth(scenario.ctx());
-
-  // Destroy it
-  auth::destroy(auth_key);
-
-  test_scenario::end(scenario);
-}

@@ -104,14 +104,3 @@ public(package) fun mint_and_transfer(
     current = current + 1;
   }
 }
-
-// ╔════════════════ [ TEMPORARY ] ═══════════════════════════════════════════════ ]
-
-/// While waiting for the official support of multi-agent transaction in Sui
-/// https://github.com/sui-foundation/sips/pull/44
-/// we will just authorize anyone to be an admin, for demonstration purposes
-public fun unsecure_temporary_auth(ctx: &mut TxContext): AuthKey {
-  AuthKey {
-    id: object::new(ctx),
-  }
-}

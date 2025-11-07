@@ -30,6 +30,8 @@
   "license": "ISC",
   "devDependencies": {
     "@mysten/prettier-plugin-move": "^0.3.3",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
     "@types/node": "^24.9.1",
     "dotenv": "^17.2.3"
   },
