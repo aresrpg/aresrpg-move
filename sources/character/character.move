@@ -33,6 +33,18 @@ const ENameInvalid: u64 = 107;
 const MIN_COLOR_VALUE: u32 = 0;
 const MAX_COLOR_VALUE: u32 = 16777215; // Equivalent to 0xFFFFFF
 
+// ╔════════════════ [ Macros ] ═══════════════════════════════════════════════ ]
+
+/// Validate field hasn't changed (optimistic locking)
+macro fun validate_unchanged($current: _, $expected: _) {
+  assert!($current == $expected, EInvalidUpdate)
+}
+
+/// Validate value is within range [min, max]
+macro fun validate_range($value: _, $min: _, $max: _, $error: _) {
+  assert!($value >= $min && $value <= $max, $error)
+}
+
 // ╔════════════════ [ Type ] ════════════════════════════════════════════════ ]
 
 public struct Character has key, store {
@@ -201,12 +213,12 @@ public fun update_character(
   };
 
   if (realm.is_some()) {
-    assert!(self.realm == last_realm, EInvalidUpdate);
+    validate_unchanged!(self.realm, last_realm);
     self.realm = realm.destroy_some();
   };
 
   if (experience.is_some()) {
-    assert!(self.experience == last_experience, EInvalidUpdate);
+    validate_unchanged!(self.experience, last_experience);
     let experience = experience.destroy_some();
     assert!(experience > self.experience, EExperienceTooLow);
     self.experience = experience;
@@ -221,37 +233,37 @@ public fun update_character(
   };
 
   if (vitality.is_some()) {
-    assert!(self.vitality == last_vitality, EInvalidUpdate);
+    validate_unchanged!(self.vitality, last_vitality);
     self.vitality = vitality.destroy_some();
   };
 
   if (wisdom.is_some()) {
-    assert!(self.wisdom == last_wisdom, EInvalidUpdate);
+    validate_unchanged!(self.wisdom, last_wisdom);
     self.wisdom = wisdom.destroy_some();
   };
 
   if (strength.is_some()) {
-    assert!(self.strength == last_strength, EInvalidUpdate);
+    validate_unchanged!(self.strength, last_strength);
     self.strength = strength.destroy_some();
   };
 
   if (intelligence.is_some()) {
-    assert!(self.intelligence == last_intelligence, EInvalidUpdate);
+    validate_unchanged!(self.intelligence, last_intelligence);
     self.intelligence = intelligence.destroy_some();
   };
 
   if (chance.is_some()) {
-    assert!(self.chance == last_chance, EInvalidUpdate);
+    validate_unchanged!(self.chance, last_chance);
     self.chance = chance.destroy_some();
   };
 
   if (agility.is_some()) {
-    assert!(self.agility == last_agility, EInvalidUpdate);
+    validate_unchanged!(self.agility, last_agility);
     self.agility = agility.destroy_some();
   };
 
   if (available_points.is_some()) {
-    assert!(self.available_points == last_available_points, EInvalidUpdate);
+    validate_unchanged!(self.available_points, last_available_points);
     self.available_points = available_points.destroy_some();
   };
 
@@ -319,7 +331,7 @@ public fun new(
   assert!(!derived_object::exists(root.uid(), name), ENameTaken);
   assert!(std_string::length(&name) > 3 && std_string::length(&name) < 20, ENameInvalid);
   assert!(!contains_whitespace(name), ENameInvalid);
-  assert!(color_1 >= MIN_COLOR_VALUE && color_1 <= MAX_COLOR_VALUE, EInvalidColor);
+  validate_range!(color_1, MIN_COLOR_VALUE, MAX_COLOR_VALUE, EInvalidColor);
 
   let character_id = derived_object::claim(
     root.uid(),
