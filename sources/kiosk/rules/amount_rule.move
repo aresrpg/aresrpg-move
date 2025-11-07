@@ -8,7 +8,7 @@ const EWrongItem: u64 = 102;
 
 public struct Rule has drop {}
 
-public struct Config has store, drop {}
+public struct Config has drop, store {}
 
 public fun add(policy: &mut TransferPolicy<Item>, cap: &TransferPolicyCap<Item>) {
   policy::add_rule(Rule {}, policy, cap, Config {})

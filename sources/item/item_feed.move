@@ -25,7 +25,7 @@ public struct FeedableAbility<phantom T> has key, store {
   pet_id: ID,
 }
 
-public struct FeedKey has store, copy, drop {}
+public struct FeedKey has copy, drop, store {}
 
 // ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 

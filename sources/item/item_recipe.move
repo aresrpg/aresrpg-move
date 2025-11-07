@@ -30,7 +30,7 @@ public struct FinishedCraft has key {
 }
 
 /// Template to mint an item randomly with stats and damages
-public struct ItemTemplate has store, drop {
+public struct ItemTemplate has drop, store {
   name: String,
   item_category: String,
   item_set: String,

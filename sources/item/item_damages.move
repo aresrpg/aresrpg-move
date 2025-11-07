@@ -9,7 +9,7 @@ use std::string::String;
 
 public struct DamagesKey has copy, drop, store {}
 
-public struct ItemDamages has store, copy, drop {
+public struct ItemDamages has copy, drop, store {
   from: u16,
   to: u16,
   damage_type: String,

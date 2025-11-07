@@ -12,7 +12,7 @@ const EInvalidUpdate: u64 = 102;
 
 // ╔════════════════ [ Types ] ════════════════════════════════════════════ ]
 
-public struct ItemStatistics has store, copy, drop {
+public struct ItemStatistics has copy, drop, store {
   // All values centered at SHIFT_U16 (32768)
   vitality: u16,
   wisdom: u16,

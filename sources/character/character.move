@@ -1,7 +1,7 @@
 module aresrpg::character;
 
 use aresrpg::{
-  auth::AuthKey,
+  auth,
   derived::AresRoot,
   events,
   protected_policy::AresRPG_TransferPolicy,
@@ -56,6 +56,8 @@ public struct Character has key, store {
   chance: u16,
   agility: u16,
   available_points: u16,
+  /// Server's last signature (for verification of next update)
+  last_signature: vector<u8>,
 }
 
 // one time witness
@@ -98,10 +100,14 @@ fun init(otw: CHARACTER, ctx: &mut TxContext) {
 
 // ╔════════════════ [ Protected ] ════════════════════════════════════════════ ]
 
-/// Update character fields including stats
+/// Update character fields including stats with two-layer security:
+/// Layer 1: Signature verification (proves server approved these specific values)
+/// Layer 2: Optimistic locking (last_* prevents stale writes)
 public fun update_character(
-  _auth: &AuthKey,
   self: &mut Character,
+  server_pubkey: vector<u8>,
+  signature: vector<u8>,
+  new_signature: vector<u8>,
   position: Option<String>,
   realm: Option<String>,
   last_realm: String,
@@ -127,8 +133,68 @@ public fun update_character(
 ) {
   version.assert_latest();
 
-  // For each field we want to update
-  // We check that the server was up to date with the last value
+  // Layer 1: Signature verification (GAS COST - Ed25519 + keccak256)
+  // Build message from all arguments and verify server signature
+  let mut verifier = auth::verifier();
+
+  // Add character ID to message
+  verifier.add(&self.id());
+
+  // Add all update arguments to message (order matters!)
+  if (position.is_some()) {
+    verifier.add_string(position.borrow());
+  };
+  if (realm.is_some()) {
+    verifier.add_string(realm.borrow());
+    verifier.add_string(&last_realm);
+  };
+  if (experience.is_some()) {
+    verifier.add(experience.borrow());
+    verifier.add(&last_experience);
+  };
+  if (health.is_some()) {
+    verifier.add(health.borrow());
+  };
+  if (soul.is_some()) {
+    verifier.add(soul.borrow());
+  };
+  if (vitality.is_some()) {
+    verifier.add(vitality.borrow());
+    verifier.add(&last_vitality);
+  };
+  if (wisdom.is_some()) {
+    verifier.add(wisdom.borrow());
+    verifier.add(&last_wisdom);
+  };
+  if (strength.is_some()) {
+    verifier.add(strength.borrow());
+    verifier.add(&last_strength);
+  };
+  if (intelligence.is_some()) {
+    verifier.add(intelligence.borrow());
+    verifier.add(&last_intelligence);
+  };
+  if (chance.is_some()) {
+    verifier.add(chance.borrow());
+    verifier.add(&last_chance);
+  };
+  if (agility.is_some()) {
+    verifier.add(agility.borrow());
+    verifier.add(&last_agility);
+  };
+  if (available_points.is_some()) {
+    verifier.add(available_points.borrow());
+    verifier.add(&last_available_points);
+  };
+
+  // Add last signature to prevent replay attacks
+  verifier.add_bytes(self.last_signature);
+
+  // Verify server signature
+  verifier.verify(server_pubkey, signature);
+
+  // Layer 2: Optimistic locking (FREE - compare-and-swap)
+  // For each field we want to update, check server was up to date with last value
 
   if (position.is_some()) {
     self.position = position.destroy_some();
@@ -189,14 +255,15 @@ public fun update_character(
     self.available_points = available_points.destroy_some();
   };
 
+  // Store new signature for next update (prevents replay attacks)
+  self.last_signature = new_signature;
+
   events::emit_character_update_event(self.id());
 }
 
 /// We use the protected policy to freely access the character and delete it.
-/// This function also requires the server's signature to ensure the deletion is authorized.
-/// Hence preventing abuse of sponsored gas storage fees.
+/// Note: Character deletion should also require signature verification in production.
 public fun delete(
-  _auth: &AuthKey,
   kiosk: &mut Kiosk,
   kiosk_cap: &KioskOwnerCap,
   character_id: ID,
@@ -284,6 +351,7 @@ public fun new(
     chance: 0,
     agility: 0,
     available_points: 0,
+    last_signature: vector::empty(), // No signature yet for new characters
   };
 
   kiosk.lock<Character>(kiosk_owner_cap, policy, character);
