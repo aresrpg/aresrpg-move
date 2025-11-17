@@ -17,7 +17,7 @@ const [, cli_result] = execSync(
   sui move build ${NETWORK === 'mainnet' ? '' : '--dev'} --dump-bytecode-as-base64 --path ./`,
   {
     encoding: 'utf-8',
-  },
+  }
 ).split('\n')
 
 const { modules, dependencies } = JSON.parse(cli_result)

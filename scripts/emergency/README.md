@@ -68,6 +68,7 @@
    ```
 
 2. **Environment configured**:
+
    - `.env` file with `PRIVATE_KEY`
    - Correct network in `sui client active-env`
 

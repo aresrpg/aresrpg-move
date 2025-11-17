@@ -8,7 +8,9 @@ if (!PRIVATE_KEY) {
   throw new Error('PRIVATE_KEY environment variable is required')
 }
 
-const keypair = Ed25519Keypair.fromSecretKey(decodeSuiPrivateKey(PRIVATE_KEY).secretKey)
+const keypair = Ed25519Keypair.fromSecretKey(
+  decodeSuiPrivateKey(PRIVATE_KEY).secretKey
+)
 
 const sui_client = new SuiClient({
   url: SUI_RPC || getFullnodeUrl(NETWORK),

@@ -9,7 +9,8 @@
     "upgrade:testnet": "NETWORK=testnet node -r dotenv/config ./scripts/upgrade.js",
     "upgrade:mainnet": "NETWORK=mainnet node -r dotenv/config ./scripts/upgrade.js",
     "lint": "eslint . && prettier . --check",
-    "format": "prettier . --write && eslint . --fix"
+    "format": "prettier . --write && eslint . --fix",
+    "prepare": "husky"
   },
   "keywords": [
     "sui",
@@ -20,16 +21,20 @@
   "author": "Sceat (fetch@sceat.xyz)",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@mysten/prettier-plugin-move": "^0.3.3",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
     "@types/node": "^24.9.1",
     "dotenv": "^17.2.3",
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-config-standard": "^17.1.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-import": "^2.31.0",
-    "prettier": "^3.4.2"
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.5.3",
+    "typescript-eslint": "^8.46.4"
   },
   "dependencies": {
     "@mysten/sui": "^1.43.1"
