@@ -28,7 +28,7 @@ const [, cli_result] = execSync(
   sui move build ${NETWORK === 'mainnet' ? '' : '--dev'} --dump-bytecode-as-base64 --path ./`,
   {
     encoding: 'utf-8',
-  },
+  }
 ).split('\n')
 
 const { modules, dependencies, digest: build_digest } = JSON.parse(cli_result)
@@ -78,7 +78,10 @@ const version_tx = new Transaction()
 
 version_tx.moveCall({
   target: `${package_id}::version::admin_update`,
-  arguments: [version_tx.object(process.env.VERSION), version_tx.object(process.env.ADMIN_CAP)],
+  arguments: [
+    version_tx.object(process.env.VERSION),
+    version_tx.object(process.env.ADMIN_CAP),
+  ],
 })
 
 const migrate_result = await sui_client.signAndExecuteTransaction({
