@@ -51,3 +51,11 @@ entry fun admin_freeze(self: &mut Version, admin: &AdminCap, ctx: &TxContext) {
 public fun assert_latest(self: &Version) {
   assert!(self.current_version == PACKAGE_VERSION, EVersionMismatch);
 }
+
+// ╔════════════════ [ Testing ] ═══════════════════════════════════════════════ ]
+
+#[test_only]
+/// Wrapper of module initializer for testing
+public fun test_init(ctx: &mut TxContext) {
+  init(ctx);
+}

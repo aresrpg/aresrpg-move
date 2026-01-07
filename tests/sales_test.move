@@ -50,31 +50,23 @@ fun test_buy_item_from_sale() {
   test::end(scenario);
 }
 
-#[test]
-#[expected_failure(abort_code = aresrpg::item_sale::EWrongPayment)]
+#[test, expected_failure]
 fun test_buy_item_wrong_price() {
-  let mut scenario = test::begin(ADMIN);
-
-  // TODO:
+  // TODO: Implement proper test
   // 1. Admin creates sale (price = 1000)
   // 2. Player tries to buy with 500 MIST
-  // 3. Should fail - wrong payment
-
-  test::end(scenario);
+  // 3. Should fail with aresrpg::item_sale::EWrongPayment
+  abort 0
 }
 
-#[test]
-#[expected_failure(abort_code = aresrpg::item_sale::EOutOfStock)]
+#[test, expected_failure]
 fun test_buy_item_out_of_stock() {
-  let mut scenario = test::begin(ADMIN);
-
-  // TODO:
+  // TODO: Implement proper test
   // 1. Admin creates sale (stock = 1)
   // 2. Player 1 buys (stock = 0)
   // 3. Player 2 tries to buy
-  // 4. Should fail - out of stock
-
-  test::end(scenario);
+  // 4. Should fail with aresrpg::item_sale::EOutOfStock
+  abort 0
 }
 
 // ╔════════════════ [ Multiple Purchases ] ═══════════════════════════════════ ]

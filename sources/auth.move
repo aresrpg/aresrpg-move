@@ -100,3 +100,15 @@ public(package) fun mint_and_transfer(
     current = current + 1;
   }
 }
+
+// ╔════════════════ [ Testing ] ═══════════════════════════════════════════════ ]
+
+#[test_only]
+/// Mint a single AuthKey for testing purposes
+public fun test_mint_auth_key(ctx: &mut TxContext) {
+  let key = AuthKey {
+    id: object::new(ctx),
+  };
+
+  transfer::transfer(key, ctx.sender());
+}

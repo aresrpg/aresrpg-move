@@ -1,0 +1,488 @@
+#[test_only]
+extend module aresrpg::inventory_test;
+
+use aresrpg::protected_policy::AresRPG_TransferPolicy;
+
+#[test]
+  fun test_equip_item_all_slots() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let hat_id = create_item_in_kiosk(&mut scenario, player(), b"test_hat");
+    let amulet_id = create_item_in_kiosk(&mut scenario, player(), b"test_amulet");
+    let cloak_id = create_item_in_kiosk(&mut scenario, player(), b"test_cloak");
+    let left_ring_id = create_item_in_kiosk(&mut scenario, player(), b"test_left_ring");
+    let right_ring_id = create_item_in_kiosk(&mut scenario, player(), b"test_right_ring");
+    let belt_id = create_item_in_kiosk(&mut scenario, player(), b"test_belt");
+    let boots_id = create_item_in_kiosk(&mut scenario, player(), b"test_boots");
+    let pet_id = create_item_in_kiosk(&mut scenario, player(), b"test_pet");
+    let weapon_id = create_item_in_kiosk(&mut scenario, player(), b"test_weapon");
+    let relic_1_id = create_item_in_kiosk(&mut scenario, player(), b"test_relic_1");
+    let relic_2_id = create_item_in_kiosk(&mut scenario, player(), b"test_relic_2");
+    let relic_3_id = create_item_in_kiosk(&mut scenario, player(), b"test_relic_3");
+    let relic_4_id = create_item_in_kiosk(&mut scenario, player(), b"test_relic_4");
+    let relic_5_id = create_item_in_kiosk(&mut scenario, player(), b"test_relic_5");
+    let relic_6_id = create_item_in_kiosk(&mut scenario, player(), b"test_relic_6");
+    let title_id = create_item_in_kiosk(&mut scenario, player(), b"test_title");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip all 16 items
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"hat".to_string(), hat_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"amulet".to_string(), amulet_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"cloak".to_string(), cloak_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"left_ring".to_string(), left_ring_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"right_ring".to_string(), right_ring_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"belt".to_string(), belt_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"boots".to_string(), boots_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"pet".to_string(), pet_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), weapon_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_1".to_string(), relic_1_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_2".to_string(), relic_2_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_3".to_string(), relic_3_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_4".to_string(), relic_4_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_5".to_string(), relic_5_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_6".to_string(), relic_6_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"title".to_string(), title_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test, expected_failure(abort_code = 101)] // EInvalidSlot
+  fun test_equip_invalid_slot() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let item_id = create_item_in_kiosk(&mut scenario, player(), b"test_weapon");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Try to equip to invalid slot
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"hacker_slot".to_string(), item_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test]
+  fun test_equip_and_unequip_item() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let item_id = create_item_in_kiosk(&mut scenario, player(), b"test_weapon");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip item
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), item_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Unequip item
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let removed_item = test::receiving_ticket_by_id<Item>(item_id);
+      let policy = test::take_shared<TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, removed_item, b"weapon".to_string(), &version, &policy);
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test]
+  fun test_replace_equipped_item() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let weapon_a_id = create_item_in_kiosk(&mut scenario, player(), b"weapon_a");
+    let weapon_b_id = create_item_in_kiosk(&mut scenario, player(), b"weapon_b");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip weapon A
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), weapon_a_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Unequip weapon A
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let removed_item = test::receiving_ticket_by_id<Item>(weapon_a_id);
+      let policy = test::take_shared<TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, removed_item, b"weapon".to_string(), &version, &policy);
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip weapon B
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), weapon_b_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test, expected_failure(abort_code = 102)] // EInvalidItem
+  fun test_unequip_wrong_item_id() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let item_a_id = create_item_in_kiosk(&mut scenario, player(), b"item_a");
+    let item_b_id = create_item_in_kiosk(&mut scenario, player(), b"item_b");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip item A
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), item_a_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Try to unequip item B (wrong ID)
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let removed_item = test::receiving_ticket_by_id<Item>(item_b_id);
+      let policy = test::take_shared<TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, removed_item, b"weapon".to_string(), &version, &policy);
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test, expected_failure(abort_code = 101)] // EInventoryNotEmpty
+  fun test_cannot_delete_character_with_equipped_items() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let item_id = create_item_in_kiosk(&mut scenario, player(), b"test_weapon");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip item
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), item_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    // Try to delete character with equipped item - should fail
+    next_tx(&mut scenario, player());
+    {
+      let character = test::take_from_address<Character>(&scenario, player());
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Character>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      // This should abort with EInventoryNotEmpty
+      character::delete(&mut kiosk, &kiosk_cap, object::id(&character), &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test]
+  fun test_full_equipment_set() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let hat_id = create_item_in_kiosk(&mut scenario, player(), b"hat");
+    let amulet_id = create_item_in_kiosk(&mut scenario, player(), b"amulet");
+    let cloak_id = create_item_in_kiosk(&mut scenario, player(), b"cloak");
+    let left_ring_id = create_item_in_kiosk(&mut scenario, player(), b"left_ring");
+    let right_ring_id = create_item_in_kiosk(&mut scenario, player(), b"right_ring");
+    let belt_id = create_item_in_kiosk(&mut scenario, player(), b"belt");
+    let boots_id = create_item_in_kiosk(&mut scenario, player(), b"boots");
+    let pet_id = create_item_in_kiosk(&mut scenario, player(), b"pet");
+    let weapon_id = create_item_in_kiosk(&mut scenario, player(), b"weapon");
+    let relic_1_id = create_item_in_kiosk(&mut scenario, player(), b"relic_1");
+    let relic_2_id = create_item_in_kiosk(&mut scenario, player(), b"relic_2");
+    let relic_3_id = create_item_in_kiosk(&mut scenario, player(), b"relic_3");
+    let relic_4_id = create_item_in_kiosk(&mut scenario, player(), b"relic_4");
+    let relic_5_id = create_item_in_kiosk(&mut scenario, player(), b"relic_5");
+    let relic_6_id = create_item_in_kiosk(&mut scenario, player(), b"relic_6");
+    let title_id = create_item_in_kiosk(&mut scenario, player(), b"title");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip all 16 items
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"hat".to_string(), hat_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"amulet".to_string(), amulet_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"cloak".to_string(), cloak_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"left_ring".to_string(), left_ring_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"right_ring".to_string(), right_ring_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"belt".to_string(), belt_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"boots".to_string(), boots_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"pet".to_string(), pet_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"weapon".to_string(), weapon_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_1".to_string(), relic_1_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_2".to_string(), relic_2_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_3".to_string(), relic_3_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_4".to_string(), relic_4_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_5".to_string(), relic_5_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"relic_6".to_string(), relic_6_id, &protected_policy, &version, ctx(&mut scenario));
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"title".to_string(), title_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Unequip all 16 items
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let policy = test::take_shared<TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(hat_id), b"hat".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(amulet_id), b"amulet".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(cloak_id), b"cloak".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(left_ring_id), b"left_ring".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(right_ring_id), b"right_ring".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(belt_id), b"belt".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(boots_id), b"boots".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(pet_id), b"pet".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(weapon_id), b"weapon".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(relic_1_id), b"relic_1".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(relic_2_id), b"relic_2".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(relic_3_id), b"relic_3".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(relic_4_id), b"relic_4".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(relic_5_id), b"relic_5".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(relic_6_id), b"relic_6".to_string(), &version, &policy);
+      character_inventory::unequip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, test::receiving_ticket_by_id<Item>(title_id), b"title".to_string(), &version, &policy);
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    test::end(scenario);
+  }
+
+  #[test]
+  fun test_feed_equipped_pet() {
+    let mut scenario = setup_test();
+    setup_inventory_environment(&mut scenario);
+    create_kiosk_for_player(&mut scenario, player());
+    create_character_for_player(&mut scenario, player(), b"TestChar");
+
+    let pet_id = create_item_in_kiosk(&mut scenario, player(), b"test_pet");
+    let _food_id = create_item_in_kiosk(&mut scenario, player(), b"test_food");
+
+    mint_auth_key_for_player(&mut scenario, player());
+
+    // Equip pet
+    next_tx(&mut scenario, player());
+    {
+      let auth = test::take_from_sender<auth::AuthKey>(&scenario);
+      let mut kiosk = test::take_shared<Kiosk>(&scenario);
+      let kiosk_cap = test::take_from_sender<KioskOwnerCap>(&scenario);
+      let character = kiosk.borrow_mut<Character>(&kiosk_cap, character_id);
+      let protected_policy = test::take_shared<AresRPG_TransferPolicy<Item>>(&scenario);
+      let version = test::take_shared<Version>(&scenario);
+
+      character_inventory::equip_item<Item>(&auth, &mut kiosk, &kiosk_cap, &mut character, b"pet".to_string(), pet_id, &protected_policy, &version, ctx(&mut scenario));
+
+      test::return_shared(kiosk);
+      test::return_to_sender(&scenario, kiosk_cap);
+      test::return_to_address(player(), character);
+      test::return_shared(protected_policy);
+      test::return_shared(version);
+      test::return_to_sender(&scenario, auth);
+    };
+
+    // TODO: Add pet feeding logic when implemented
+
+    test::end(scenario);
+  }

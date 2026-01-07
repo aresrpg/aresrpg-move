@@ -328,7 +328,7 @@ public fun new(
 
   key_name.append(b"::character".to_string());
 
-  assert!(!derived_object::exists(root.uid(), name), ENameTaken);
+  assert!(!derived_object::exists(root.uid(), key_name), ENameTaken);
   assert!(std_string::length(&name) > 3 && std_string::length(&name) < 20, ENameInvalid);
   assert!(!contains_whitespace(name), ENameInvalid);
   validate_range!(color_1, MIN_COLOR_VALUE, MAX_COLOR_VALUE, EInvalidColor);
@@ -429,4 +429,12 @@ fun verify_classe(classe: String) {
     classe == b"shusen".to_string(),
     EInvalidClasse,
   );
+}
+
+// ╔════════════════ [ Testing ] ═══════════════════════════════════════════════ ]
+
+#[test_only]
+/// Wrapper of module initializer for testing
+public fun test_init(ctx: &mut TxContext) {
+  init(CHARACTER {}, ctx);
 }

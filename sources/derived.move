@@ -21,3 +21,11 @@ fun init(ctx: &mut TxContext) {
 public(package) fun uid(root: &mut AresRoot): &mut UID {
   &mut root.id
 }
+
+// ╔════════════════ [ Testing ] ═══════════════════════════════════════════════ ]
+
+#[test_only]
+/// Wrapper of module initializer for testing
+public fun test_init(ctx: &mut TxContext) {
+  init(ctx);
+}

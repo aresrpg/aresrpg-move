@@ -2,7 +2,7 @@
 
 [move]
 version = 3
-manifest_digest = "FA439099C2E1467B89A5A7856BA0AEB2B27ADBEF16C7332DAF3E6C8A36859479"
+manifest_digest = "3BAFBE494128B28572CA8D9BC4D2EAD3963D773979EC43F71728970A66901187"
 deps_digest = "F9B494B64F0615AED0E98FC12A85B85ECD2BC5185C22D30E7F67786BB52E507C"
 dependencies = [
   { id = "Kiosk", name = "Kiosk" },
@@ -49,7 +49,7 @@ dependencies = [
 
 [move.toolchain-version]
 compiler-version = "1.59.0"
-edition = "2024.beta"
+edition = "2024.alpha"
 flavor = "sui"
 
 [env]

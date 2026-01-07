@@ -135,6 +135,10 @@ public(package) fun split(self: &mut Item, amount: u32, ctx: &mut TxContext): It
   // the item must be stackable
   assert!(self.stackable, ENotStackable);
 
+  // Validate amounts before subtraction to avoid underflow
+  assert!(amount >= 1, EWrongAmount);
+  assert!(self.amount >= amount + 1, EWrongAmount);
+
   let new_item = new(
     self.name,
     self.item_category,
@@ -147,10 +151,6 @@ public(package) fun split(self: &mut Item, amount: u32, ctx: &mut TxContext): It
   );
 
   self.amount = self.amount - amount;
-
-  // Both items must have at least 1 item
-  assert!(self.amount >= 1, EWrongAmount);
-  assert!(new_item.amount >= 1, EWrongAmount);
 
   new_item
 }
@@ -237,4 +237,12 @@ fun verify_category(category: String) {
       category == b"title".to_string(),
     EWrongCategory,
   );
+}
+
+// ╔════════════════ [ Testing ] ═══════════════════════════════════════════════ ]
+
+#[test_only]
+/// Wrapper of module initializer for testing
+public fun test_init(ctx: &mut TxContext) {
+  init(ITEM {}, ctx);
 }
