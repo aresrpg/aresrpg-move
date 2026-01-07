@@ -99,7 +99,8 @@ async function testEmptyMessage() {
   try {
     // Dev-inspect to test without committing
     const result = await client.devInspectTransactionBlock({
-      sender: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      sender:
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactionBlock: tx,
     })
 
@@ -161,7 +162,8 @@ async function testSingleFieldMessage() {
 
   try {
     const result = await client.devInspectTransactionBlock({
-      sender: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      sender:
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactionBlock: tx,
     })
 
@@ -188,7 +190,8 @@ async function testMultipleFields() {
   const publicKey = ed25519.getPublicKey(privateKeyHex)
 
   // Build message with multiple fields
-  const objectId = '0x0000000000000000000000000000000000000000000000000000000000000001'
+  const objectId =
+    '0x0000000000000000000000000000000000000000000000000000000000000001'
   const stringValue = 'hello'
   const numberValue = 42n
 
@@ -197,7 +200,11 @@ async function testMultipleFields() {
   const encodedString = bcs.string().serialize(stringValue).toBytes()
   const encodedNumber = bcs.u64().serialize(numberValue).toBytes()
 
-  const fullMessage = new Uint8Array([...encodedId, ...encodedString, ...encodedNumber])
+  const fullMessage = new Uint8Array([
+    ...encodedId,
+    ...encodedString,
+    ...encodedNumber,
+  ])
 
   console.log(`Message length: ${fullMessage.length} bytes`)
 
@@ -242,7 +249,8 @@ async function testMultipleFields() {
 
   try {
     const result = await client.devInspectTransactionBlock({
-      sender: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      sender:
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactionBlock: tx,
     })
 
@@ -288,7 +296,8 @@ async function testInvalidSignature() {
 
   try {
     const result = await client.devInspectTransactionBlock({
-      sender: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      sender:
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactionBlock: tx,
     })
 
@@ -358,7 +367,8 @@ async function testFieldOrdering() {
 
   try {
     const result = await client.devInspectTransactionBlock({
-      sender: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      sender:
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       transactionBlock: tx,
     })
 
@@ -398,15 +408,15 @@ async function runAllTests() {
   console.log('  Test Results')
   console.log('==============================================')
   console.log(`Total tests: ${results.length}`)
-  console.log(`Passed: ${results.filter(r => r).length}`)
-  console.log(`Failed: ${results.filter(r => !r).length}`)
+  console.log(`Passed: ${results.filter((r) => r).length}`)
+  console.log(`Failed: ${results.filter((r) => !r).length}`)
   console.log('==============================================\n')
 
-  process.exit(results.every(r => r) ? 0 : 1)
+  process.exit(results.every((r) => r) ? 0 : 1)
 }
 
 // Run tests
-runAllTests().catch(error => {
+runAllTests().catch((error) => {
   console.error('Fatal error:', error)
   process.exit(1)
 })

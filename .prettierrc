@@ -1,12 +1,7 @@
 {
-  "plugins": ["@mysten/prettier-plugin-move"],
-  "tabWidth": 2,
-  "printWidth": 100,
-  "useModuleLabel": true,
-  "autoGroupImports": "package",
-  "enableErrorDebug": false,
-  "wrapComments": false,
   "semi": false,
   "singleQuote": true,
-  "arrowParens": "avoid"
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "printWidth": 80
 }
